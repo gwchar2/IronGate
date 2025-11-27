@@ -1,0 +1,8 @@
+bin/
+obj/
+out/
+Debug/
+Release/
+.vs/
+*.logs
+*.secret.json
