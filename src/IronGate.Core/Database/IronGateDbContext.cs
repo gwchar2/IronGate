@@ -2,14 +2,18 @@
 using Microsoft.EntityFrameworkCore;
 
 namespace IronGate.Core.Database;
-public class IronGateDbContext(DbContextOptions<IronGateDbContext> options) : DbContext(options) {
-    public DbSet<User> Users => Set<User>();
-    public DbSet<HashProfile> HashProfiles => Set<HashProfile>();
+
+/*
+ * This class represents the application's database context.
+ */
+public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options) {
     public DbSet<DefenseProfile> DefenseProfiles => Set<DefenseProfile>();
-    public DbSet<ExperimentRun> ExperimentRuns => Set<ExperimentRun>();
+    public DbSet<User> Users => Set<User>();
+    public DbSet<UserHash> UserHashes => Set<UserHash>();
+    public DbSet<AuthAttempt> AuthAttempts => Set<AuthAttempt>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(IronGateDbContext).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         base.OnModelCreating(modelBuilder);
     }
 }

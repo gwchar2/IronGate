@@ -1,20 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace IronGate.Core.Database.Entities;
 
-// Represents a defense profile with various security measures.
+/*
+ * Represents the defense profile configuration used for authentication.
+ */
 public class DefenseProfile {
-    public Guid Id { get; set; }
-    public string Name { get; set; } = null!;
-    public bool UsePepper { get; set; }
-    public bool UseRateLimiting { get; set; }
-    public int? MaxAttemptsPerMinute { get; set; }
-    public bool UseCaptcha { get; set; }
-    public bool UseTotp { get; set; }
-    public string? Notes { get; set; }
-    public ICollection<ExperimentRun> ExperimentRuns { get; set; } = new List<ExperimentRun>();
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public string Name { get; set; } = null!;            // "baseline", "full_protection"
+    public int SeedGroup { get; set; }                   // SEED_GROUP (for reproducibility)
+    public string HashMode { get; set; } = null!;        // "sha256_salt", "bcrypt_cost12", "argon2id_m64_t1_p1"
+    public bool PepperEnabled { get; set; }
+    public bool RateLimitEnabled { get; set; }
+    public int? RateLimitWindowSeconds { get; set; }
+    public int? MaxAttemptsPerUser { get; set; }
+    public int? MaxAttemptsGlobal { get; set; }
+    public bool LockoutEnabled { get; set; }
+    public int? LockoutThreshold { get; set; }
+    public int? LockoutDurationSeconds { get; set; }
+    public bool CaptchaEnabled { get; set; }
+    public int? CaptchaAfterFailedAttempts { get; set; }
+    public bool TotpRequired { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public bool IsActive { get; set; }
+
+    public ICollection<AuthAttempt> AuthAttempts { get; set; } = [];
 }

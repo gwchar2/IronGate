@@ -12,4 +12,12 @@
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.11" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Persistence\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Database\Entities\DefenseProfile.cs" />
+  </ItemGroup>
+
 </Project>
