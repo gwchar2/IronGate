@@ -1,0 +1,5 @@
+
+services:
+  IronGate.Api:
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"

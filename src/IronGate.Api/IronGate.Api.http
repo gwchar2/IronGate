@@ -1,4 +1,4 @@
-@IronGate.Api_HostAddress = http://localhost:5248
+@IronGate.Api_HostAddress = http://localhost:8080
 
 GET {{IronGate.Api_HostAddress}}/weatherforecast/
 Accept: application/json

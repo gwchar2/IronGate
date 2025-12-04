@@ -49,5 +49,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\IronGate.Core\IronGate.Core.csproj">
+      <Project>{21a44908-10da-4b67-9820-4e2e3fb507a6}</Project>
+      <Name>IronGate.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
