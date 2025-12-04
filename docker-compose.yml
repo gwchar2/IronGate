@@ -1,0 +1,37 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: irongate_db
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "Ir0nGate_Dev1!" 
+      MSSQL_PID: "Express"
+    ports:
+      - "1433:1433"
+    volumes:
+      - irongate_sql_data:/var/opt/mssql
+    networks:
+      - irongate_net
+
+  IronGate.Api:
+    image: irongate.api
+    build:
+      context: ./src
+      dockerfile: IronGate.Api/Dockerfile
+    container_name: irongate_api
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ConnectionStrings__DefaultConnection: "Server=db;Database=IronGateDb;User Id=sa;Password=Ir0nGate_Dev1!;TrustServerCertificate=True;"
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+    networks:
+      - irongate_net
+
+volumes:
+  irongate_sql_data:
+
+networks:
+  irongate_net:
+    driver: bridge
