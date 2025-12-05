@@ -50,3 +50,21 @@ git remote -v    # where “origin” points
 ```
 
 
+```
+https://learn.microsoft.com/en-us/ssms/install/install
+Open SQL Server Management Studio or Azure Data Studio on Windows.
+
+Connect to:
+
+Server: localhost,1433
+
+Auth: SQL Login
+
+User: sa
+
+Password: Ir0nGate_Dev1!
+
+Database: IronGateDb
+
+Right-click Users → Select Top 1000 Rows.
+```

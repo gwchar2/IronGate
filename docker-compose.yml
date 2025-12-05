@@ -28,6 +28,8 @@ services:
       - "8080:8080"
     networks:
       - irongate_net
+    volumes:
+      - ./src/IronGate.Core/Database/Seeder/user_seed.json:/app/SeedData/user_seed.json:ro
 
 volumes:
   irongate_sql_data:
