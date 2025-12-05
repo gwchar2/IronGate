@@ -8,7 +8,7 @@ namespace IronGate.Core.Security;
 /*
  * This class is in charge of password hashing functions.
  */
-public static class PasswordHashing {
+public static class HashHelper {
 
     /* 
      * Generates a random salt of specified size in bytes, returned as Base64 string.

@@ -9,7 +9,7 @@ public class User {
     public string PlainPassword { get; set; } = null!;           // research dataset only
     public string PasswordStrengthCategory { get; set; } = "";   // "weak", "medium", "strong" etc.
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime? LastLoginSuccessAt { get; set; }
+    public DateTime? LastLoginSuccessAt { get; set; } 
     public DateTime? LastLoginAttemptAt { get; set; }
     public int FailedAttemptsInWindow { get; set; }
     public DateTime? LockoutUntil { get; set; }
@@ -17,12 +17,9 @@ public class User {
     /* TOTP */
     public bool TotpEnabled { get; set; }           // does this user use TOTP at all?
     public string? TotpSecret { get; set; }         // shared secret (Base32), null if not using TOTP
-    public DateTime? TotpRegisteredAt { get; set; } // when TOTP was provisioned (optional but nice)
+    public DateTime? TotpRegisteredAt { get; set; } 
 
 
-    /* USER HASHES */
+    /* PASSWORD HASHES */
     public ICollection<UserHash> Hashes { get; set; } = [];
-
-    /* RECENT AUTH ATTEMPTS */
-    public ICollection<AuthAttempt> AuthAttempts { get; set; } = [];
 }

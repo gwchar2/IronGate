@@ -13,7 +13,7 @@ public class UserHashConfig : IEntityTypeConfiguration<UserHash> {
 
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.HashMode)
+        builder.Property(x => x.HashAlgorithm)
             .IsRequired()
             .HasMaxLength(100);
 
@@ -28,6 +28,6 @@ public class UserHashConfig : IEntityTypeConfiguration<UserHash> {
         builder.Property(x => x.CreatedAt)
             .IsRequired();
 
-        builder.HasIndex(x => new { x.UserId, x.HashMode, x.IsActive });
+        builder.HasIndex(x => new { x.UserId, x.HashAlgorithm }).IsUnique();
     }
 }

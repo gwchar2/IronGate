@@ -42,11 +42,6 @@ public class UserConfig : IEntityTypeConfiguration<User> {
             .HasForeignKey(h => h.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasMany(x => x.AuthAttempts)
-            .WithOne(a => a.User)
-            .HasForeignKey(a => a.UserId)
-            .OnDelete(DeleteBehavior.SetNull);
-
         builder.Property(x => x.TotpSecret)
             .HasMaxLength(128); 
     }
