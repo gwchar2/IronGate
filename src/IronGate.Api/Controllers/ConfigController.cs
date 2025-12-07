@@ -1,7 +1,6 @@
-﻿using IronGate.Api.Features.Config.ConfigService;
-using IronGate.Api.Features.Config.Dtos;
+﻿using IronGate.Api.Features.Config.Dtos;
 using Microsoft.AspNetCore.Mvc;
-
+using IronGate.Api.Features.Config.ConfigService;
 namespace IronGate.Api.Controllers;
 
 [ApiController]
@@ -9,7 +8,7 @@ namespace IronGate.Api.Controllers;
 public sealed class ConfigController(IConfigService configService) : ControllerBase {
     private readonly IConfigService _configService = configService;
 
-    // GET: /api/config
+    // GET /api/config
     [HttpGet]
     public async Task<ActionResult<AuthConfigDto>> Get(CancellationToken cancellationToken) {
         try {
@@ -24,7 +23,7 @@ public sealed class ConfigController(IConfigService configService) : ControllerB
         }
     }
 
-    // PUT: /api/config
+    // PUT /api/config
     [HttpPut]
     public async Task<ActionResult<AuthConfigDto>> Update(
         [FromBody] AuthConfigDto request, CancellationToken cancellationToken) {

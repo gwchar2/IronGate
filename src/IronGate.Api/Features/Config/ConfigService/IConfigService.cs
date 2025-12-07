@@ -1,5 +1,4 @@
-﻿
-using IronGate.Api.Features.Config.Dtos;
+﻿using IronGate.Api.Features.Config.Dtos;
 
 namespace IronGate.Api.Features.Config.ConfigService;
 

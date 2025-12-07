@@ -7,9 +7,9 @@ namespace IronGate.Core.Database.Builders;
 /*
  * This class configures the DefenseProfile entity for Entity Framework Core.
  */
-public class DbAuthProfileConfig : IEntityTypeConfiguration<DbAuthProfile> {
-    public void Configure(EntityTypeBuilder<DbAuthProfile> builder) {
-        builder.ToTable("db_auth_profile");
+public class DbConfigProfileConfig : IEntityTypeConfiguration<DbConfigProfile> {
+    public void Configure(EntityTypeBuilder<DbConfigProfile> builder) {
+        builder.ToTable("db_config_profile");
 
         builder.HasKey(x => x.Id);
 

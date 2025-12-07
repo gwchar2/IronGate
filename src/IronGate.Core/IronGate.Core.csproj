@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Database\Entities\DbAuthProfile.cs" />
+    <None Include="Database\Entities\DbConfigProfile.cs" />
   </ItemGroup>
 
 </Project>

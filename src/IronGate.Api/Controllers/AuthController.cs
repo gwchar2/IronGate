@@ -1,4 +1,6 @@
-﻿using IronGate.Api.Features.Auth.AuthService;
+﻿using IronGate.Api.Controllers.Requests;
+using IronGate.Api.Features.Auth.AuthService;
+using IronGate.Api.Features.Captcha.CaptchaService;
 using IronGate.Api.Features.Auth.Dtos;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,12 +8,12 @@ namespace IronGate.Api.Controllers;
 
 
 /*
- * TODO: Implement CAPTCHA (Captcha can be added to TOTP request)
- * TODO: Add Captcha and Rate Limit fields to LoginRequest + AuthAttemptDto
  * TODO: Implement Endpointfilters for Rate Limiting + Logic
  * TODO: Implement Endpointfilters for Lockout + Logic
- * TODO: Implement Admin ENDPOINT for CAPTCHA configuration
  * TODO: Implement logging of AuthAttempts to DB
+ * TODO: Implement GROUP_SEED checker for captcha (Can input any parameter we want (except empty...) and it returns a captcha...)
+ * TODO: Implement username validator (Can't be empty, etc...) 
+ * TODO: Implement password validator (Certain strength? Do we need this?)
  */
 [ApiController]
 [Route("api/[controller]")]
@@ -83,4 +85,29 @@ public sealed class AuthController(IAuthService authService) : ControllerBase {
             });
         }
     }
+    
+    // POST: /api/auth/login/captcha
+    [HttpPost("login/captcha")]
+    public async Task<ActionResult<AuthAttemptDto>> LoginWithCaptcha(
+        [FromBody] LoginCaptchaRequest request,CancellationToken cancellationToken) {
+        try {
+            var attempt = await _authService.LoginWithCaptchaAsync(request, cancellationToken);
+
+            return attempt.Result switch {
+                AuthResultCode.Success => Ok(attempt),
+                AuthResultCode.CaptchaRequired => StatusCode(StatusCodes.Status429TooManyRequests, attempt),
+                AuthResultCode.TotpRequired => Unauthorized(attempt),
+                _ => Unauthorized(attempt)
+            };
+        }
+        catch (Exception ex) {
+            return StatusCode(StatusCodes.Status500InternalServerError, new {
+                error = "Unexpected error during captcha login.",
+                detail = ex.Message
+            });
+        }
+    }
+
+
+
 }
