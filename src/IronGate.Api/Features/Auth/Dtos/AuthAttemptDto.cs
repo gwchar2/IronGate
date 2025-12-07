@@ -16,6 +16,10 @@ public sealed class AuthAttemptDto {
     /* Password Hashing Details */
     public string HashAlgorithm { get; set; } = null!;      // "SHA256" | "BCRYPT" | "ARGON2ID"
 
+    /* TOTP Requirement */
+    public bool TotpRequired { get; set; } = false;
+    public bool CaptchaRequired { get; set; } = false;
+
     /* Database Defence Details */
     public DefenceSnapshotDto Defences { get; set; } = new();
 }

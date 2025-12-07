@@ -11,7 +11,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.11" />
+    <Compile Remove="Endpoints\**" />
+    <Content Remove="Endpoints\**" />
+    <EmbeddedResource Remove="Endpoints\**" />
+    <None Remove="Endpoints\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.11">
       <PrivateAssets>all</PrivateAssets>
@@ -23,10 +29,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\IronGate.Core\IronGate.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Endpoints\" />
   </ItemGroup>
 	
 	

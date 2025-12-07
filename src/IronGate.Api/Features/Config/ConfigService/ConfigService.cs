@@ -1,21 +1,26 @@
-﻿
-using IronGate.Api.Features.Config.Dtos;
+﻿using IronGate.Api.Features.Config.Dtos;
 using IronGate.Core.Database;
 using IronGate.Core.Database.Entities;
 using Microsoft.EntityFrameworkCore;
+
 namespace IronGate.Api.Features.Config.ConfigService;
 
+
+/*
+ * This service manages authentication configuration settings
+ */
 public sealed class ConfigService(AppDbContext db) : IConfigService {
     private readonly AppDbContext _db = db;
 
     public async Task<AuthConfigDto> GetConfigAsync(CancellationToken cancellationToken = default) {
-        var entity = await _db.AuthProfile.SingleAsync(cancellationToken);
+        var entity = await _db.ConfigProfile.SingleAsync(cancellationToken);
         return MapToDto(entity);
     }
 
     public async Task<AuthConfigDto> UpdateConfigAsync(
         AuthConfigDto request, CancellationToken cancellationToken = default) {
-        var entity = await _db.AuthProfile.SingleAsync(cancellationToken); 
+       
+        var entity = await _db.ConfigProfile.SingleAsync(cancellationToken); 
         if (request.HashAlgorithm is not ("SHA256" or "BCRYPT" or "ARGON2ID")) {
             throw new InvalidOperationException($"Unsupported hash algorithm: {request.HashAlgorithm}");
         }
@@ -30,15 +35,16 @@ public sealed class ConfigService(AppDbContext db) : IConfigService {
         entity.LockoutDurationSeconds = request.LockoutDurationSeconds;
         entity.CaptchaEnabled = request.CaptchaEnabled;
         entity.CaptchaAfterFailedAttempts = request.CaptchaAfterFailedAttempts;
-        entity.TotpRequired = request.TotpRequired;
 
         await _db.SaveChangesAsync(cancellationToken);
 
         return MapToDto(entity);
     }
 
-    private static AuthConfigDto MapToDto(DbAuthProfile entity) {
+    private static AuthConfigDto MapToDto(DbConfigProfile entity) {
         return new AuthConfigDto {
+            Id = entity.Id,
+            Name = entity.Name,
             HashAlgorithm = entity.HashAlgorithm,
             PepperEnabled = entity.PepperEnabled,
             RateLimitEnabled = entity.RateLimitEnabled,
@@ -48,8 +54,7 @@ public sealed class ConfigService(AppDbContext db) : IConfigService {
             LockoutThreshold = entity.LockoutThreshold,
             LockoutDurationSeconds = entity.LockoutDurationSeconds,
             CaptchaEnabled = entity.CaptchaEnabled,
-            CaptchaAfterFailedAttempts = entity.CaptchaAfterFailedAttempts,
-            TotpRequired = entity.TotpRequired
+            CaptchaAfterFailedAttempts = entity.CaptchaAfterFailedAttempts
         };
     }
 }

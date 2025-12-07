@@ -1,4 +1,4 @@
-﻿namespace IronGate.Api.Features.Auth.TotpValidator;
+﻿namespace IronGate.Core.Security.TotpValidator;
 
 public interface ITotpValidator {
     bool ValidateCode(string secret, string code);

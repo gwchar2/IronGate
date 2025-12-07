@@ -110,6 +110,24 @@ public static class DbSeeder {
             );
         }
 
+
+        // Default config proile
+        db.ConfigProfile.Add(new DbConfigProfile {
+            Id = Guid.NewGuid(),
+            Name = "Default Profile",
+            HashAlgorithm = "ARGON2ID",
+            PepperEnabled = true,
+            RateLimitEnabled = true,
+            RateLimitWindowSeconds = 60,
+            MaxAttemptsPerUser = 5,
+            LockoutEnabled = true,
+            LockoutThreshold = 5,
+            LockoutDurationSeconds = 300,
+            CaptchaEnabled = true,
+            CaptchaAfterFailedAttempts = 3
+
+        });
+
         await db.SaveChangesAsync();
     }
 }

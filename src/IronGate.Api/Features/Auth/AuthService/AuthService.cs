@@ -1,23 +1,31 @@
-﻿using IronGate.Api.Features.Auth.Dtos;
+﻿using IronGate.Api.Controllers.Requests;
+using IronGate.Api.Features.Auth.Dtos;
 using IronGate.Api.Features.Auth.PasswordHasher;
-using IronGate.Api.Features.Auth.TotpValidator;
+using IronGate.Api.Features.Captcha.CaptchaService;
 using IronGate.Api.Features.Config.ConfigService;
 using IronGate.Api.Features.Config.Dtos;
 using IronGate.Core.Database;
 using IronGate.Core.Database.Entities;
 using IronGate.Core.Security;
+using IronGate.Core.Security.TotpValidator;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 
 namespace IronGate.Api.Features.Auth.AuthService;
 
-public sealed class AuthService(AppDbContext db,IConfigService configService,IPasswordHasher passwordHasher,ITotpValidator totpValidator, string pepper) : IAuthService {
+public sealed class AuthService(AppDbContext db,IConfigService configService,IPasswordHasher passwordHasher,ITotpValidator totpValidator,ICaptchaService captchaService,string pepper) : IAuthService {
     private readonly AppDbContext _db = db;
     private readonly IConfigService _configService = configService;
     private readonly IPasswordHasher _passwordHasher = passwordHasher;
     private readonly ITotpValidator _totpValidator = totpValidator;
+    private readonly ICaptchaService _captchaService = captchaService;
     private readonly string _pepper = pepper;
 
+    /*
+     * Registration process
+     * Receives: username, password
+     * Returns: AuthAttemptDto
+     */
     public async Task<AuthAttemptDto> RegisterAsync(
         RegisterRequest request, CancellationToken cancellationToken = default) {
 
@@ -26,8 +34,7 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
         var (attempt, stopwatch) = CreateAttemptSkeleton(
             username: request.Username,
             operation: "REGISTER",
-            config
-            );
+            config);
 
         try {
             var existing = await _db.Users.SingleOrDefaultAsync(u => u.Username == request.Username, cancellationToken);
@@ -55,27 +62,27 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
                 new UserHash {
                     Id = Guid.NewGuid(),
                     UserId = user.Id,
-                    HashAlgorithm = "sha256",
+                    HashAlgorithm = "SHA256",
                     Salt = shaSalt,
                     Hash = shaHash
                 },
                 new UserHash {
                     Id = Guid.NewGuid(),
                     UserId = user.Id,
-                    HashAlgorithm = "bcrypt",
+                    HashAlgorithm = "BCRYPT",
                     Salt = string.Empty, 
                     Hash = bcryptHash
                 },
                 new UserHash {
                     Id = Guid.NewGuid(),
                     UserId = user.Id,
-                    HashAlgorithm = "argon2id",
+                    HashAlgorithm = "ARGON2ID",
                     Salt = argonSalt,
                     Hash = argonHash
                 }
             );
 
-            // Hashes WITH pepper (same salts as non-peppered variants)
+            // Hashes WITH pepper 
             var pepperedPassword = _pepper + request.Password;
 
             var (shaPepperHash, _) = HashHelper.HashSha256(pepperedPassword, shaSalt);
@@ -86,23 +93,26 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
                 new UserHash {
                     Id = Guid.NewGuid(),
                     UserId = user.Id,
-                    HashAlgorithm = "sha256+pepper",
+                    HashAlgorithm = "SHA256",
                     Salt = shaSalt,
-                    Hash = shaPepperHash
+                    Hash = shaPepperHash,
+                    PepperEnabled = true
                 },
                 new UserHash {
                     Id = Guid.NewGuid(),
                     UserId = user.Id,
-                    HashAlgorithm = "bcrypt+pepper",
+                    HashAlgorithm = "BCRYPT",
                     Salt = string.Empty,
-                    Hash = bcryptPepperHash
+                    Hash = bcryptPepperHash,
+                    PepperEnabled = true
                 },
                 new UserHash {
                     Id = Guid.NewGuid(),
                     UserId = user.Id,
-                    HashAlgorithm = "argon2id+pepper",
+                    HashAlgorithm = "ARGON2ID",
                     Salt = argonSalt,
-                    Hash = argonPepperHash
+                    Hash = argonPepperHash,
+                    PepperEnabled = true
                 }
             );
 
@@ -119,6 +129,12 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
         }
     }
 
+
+    /*
+     * Login process
+     * Receives: username, password
+     * Returns: AuthAttemptDto
+     */
     public async Task<AuthAttemptDto> LoginAsync(
         LoginRequest request,CancellationToken cancellationToken = default) {
         var config = await _configService.GetConfigAsync(cancellationToken);
@@ -126,12 +142,10 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
         var (attempt, stopwatch) = CreateAttemptSkeleton(
             username: request.Username,
             operation: "LOGIN",
-            config
-        );
+            config);
 
         try {
-            var user = await _db.Users
-                .SingleOrDefaultAsync(u => u.Username == request.Username, cancellationToken);
+            var user = await _db.Users.SingleOrDefaultAsync(u => u.Username == request.Username, cancellationToken);
 
             if (user is null) {
                 attempt.Success = false;
@@ -140,13 +154,10 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
             }
 
             // We grab the current hash variant key from config
-            var hashVariant = BuildHashVariantKey(config);
+            var hashVariant = GetHashVariantKey(config);
 
             // We get the specific hash row for this user matching the current config
-            var userHash = await _db.UserHashes
-                .SingleOrDefaultAsync(
-                    h => h.UserId == user.Id && h.HashAlgorithm == hashVariant,
-                    cancellationToken);
+            var userHash = await _db.UserHashes.SingleOrDefaultAsync(h => h.UserId == user.Id && h.HashAlgorithm == hashVariant, cancellationToken);
 
             // If there isnt a hashed password for the user..... WEEEEEIIIIRRDDDD
             if (userHash is null) {
@@ -158,8 +169,7 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
             // Verify password
             var passwordValid = _passwordHasher.VerifyPassword(
                 request.Password,
-                userHash,
-                config.PepperEnabled ? _pepper : null);
+                userHash);
 
             if (!passwordValid) {
                 attempt.Success = false;
@@ -167,9 +177,10 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
                 return FinishAttempt(attempt, stopwatch);
             }
 
-            // If TOTP is enabled, this step just says: "password OK, but TOTP needed"
-            if (user.TotpEnabled || config.TotpRequired) {
+            // If TOTP is enabled, returns TotpRequired resultcode.
+            if (user.TotpEnabled) {
                 attempt.Success = false;
+                attempt.TotpRequired = true;
                 attempt.Result = AuthResultCode.TotpRequired;
                 return FinishAttempt(attempt, stopwatch);
             }
@@ -190,6 +201,11 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
         }
     }
 
+    /*
+     * Login with TOTP process
+     * Receives: username, password, totpCode
+     * Returns: AuthAttemptDto
+     */
     public async Task<AuthAttemptDto> LoginTotpAsync(
         LoginTotpRequest request, CancellationToken cancellationToken = default) {
         var config = await _configService.GetConfigAsync(cancellationToken);
@@ -197,8 +213,7 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
         var (attempt, stopwatch) = CreateAttemptSkeleton(
             username: request.Username,
             operation: "LOGIN_TOTP",
-            config
-            );
+            config);
 
         try {
             var user = await _db.Users.SingleOrDefaultAsync(u => u.Username == request.Username, cancellationToken);
@@ -209,14 +224,14 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
                 return FinishAttempt(attempt, stopwatch);
             }
 
-            // We grab the current hash variant key from config
-            var hashVariant = BuildHashVariantKey(config);
+            attempt.TotpRequired = user.TotpEnabled;            // The attempt requires a TOTP only if the user requires one. If this is false, it will fail this specific request later on (line 240)
 
-            // We get the specific hash row for this user matching the current config
-            var userHash = await _db.UserHashes
-                .SingleOrDefaultAsync(
-                    h => h.UserId == user.Id && h.HashAlgorithm == hashVariant,
-                    cancellationToken);
+            /* PASSWORD  VERIFICATION */
+            // We grab the current hash variant key from config
+            var hashVariant = GetHashVariantKey(config);
+
+
+            var userHash = await _db.UserHashes.SingleOrDefaultAsync(h => h.UserId == user.Id && h.HashAlgorithm == hashVariant, cancellationToken);
 
             // If there isnt a hashed password for the user..... WEEEEEIIIIRRDDDD
             if (userHash is null) {
@@ -227,8 +242,7 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
 
             var passwordValid = _passwordHasher.VerifyPassword(
                 request.Password,
-                userHash,
-                config.PepperEnabled ? _pepper : null);
+                userHash);
 
             if (!passwordValid) {
                 attempt.Success = false;
@@ -236,8 +250,9 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
                 return FinishAttempt(attempt, stopwatch);
             }
 
-            // If the user does not have TOTP enabled, and TOTP is not required for him
-            if (!(user.TotpEnabled || config.TotpRequired)) {
+            /* TOTP VALIDATION */
+            // If the user does not have TOTP enabled, return failure.
+            if (!(user.TotpEnabled)) {
                 attempt.Success = false;
                 attempt.Result = AuthResultCode.Fail;
                 return FinishAttempt(attempt, stopwatch);
@@ -265,8 +280,91 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
         }
     }
 
+    /*
+     * Login with CAPTCHA process
+     * Receives: username, password, captchaToken
+     * Returns: AuthAttemptDto
+     */
+    public async Task<AuthAttemptDto> LoginWithCaptchaAsync(
+       LoginCaptchaRequest request,CancellationToken cancellationToken = default) {
+        
+        var config = await _configService.GetConfigAsync(cancellationToken);
+
+        var (attempt, stopwatch) = CreateAttemptSkeleton(
+            username: request.Username,
+            operation: "LOGIN_CAPTCHA",
+            config: config);
+
+        try {
+            var user = await _db.Users.SingleOrDefaultAsync(u => u.Username == request.Username, cancellationToken);
+
+            if (user is null) {
+                attempt.Success = false;
+                attempt.Result = AuthResultCode.Fail;
+                return FinishAttempt(attempt, stopwatch);
+            }
+
+            /* Captcha Validation */
+            var captchaValid = await _captchaService.ValidateTokenAsync(
+                request.CaptchaToken,
+                cancellationToken);
+
+            if (!captchaValid) {
+                attempt.Success = false;
+                attempt.Result = AuthResultCode.CaptchaRequired;
+                attempt.CaptchaRequired = true;     
+                return FinishAttempt(attempt, stopwatch);
+            }
+
+            /* Password verification */
+            var hashVariant = GetHashVariantKey(config);
+
+            var userHash = await _db.UserHashes.SingleOrDefaultAsync(h => h.UserId == user.Id && h.HashAlgorithm == hashVariant,cancellationToken);
+
+            if (userHash is null) {
+                attempt.Success = false;
+                attempt.Result = AuthResultCode.Fail;
+                return FinishAttempt(attempt, stopwatch);
+            }
+
+            var passwordValid = _passwordHasher.VerifyPassword(
+                request.Password,
+                userHash);
+
+            if (!passwordValid) {
+                attempt.Success = false;
+                attempt.Result = AuthResultCode.Fail;
+                return FinishAttempt(attempt, stopwatch);
+            }
+
+            /* If TOTP is also required */
+            if (user.TotpEnabled) {
+                attempt.Success = false;
+                attempt.Result = AuthResultCode.TotpRequired;
+                return FinishAttempt(attempt, stopwatch);
+            }
+
+            // Captcha + password are OK
+            attempt.Success = true;
+            attempt.Result = AuthResultCode.Success;
+            return FinishAttempt(attempt, stopwatch);
+        }
+        catch {
+            attempt.Success = false;
+            attempt.Result = AuthResultCode.Fail;
+            return FinishAttempt(attempt, stopwatch);
+        }
+    }
+
+
+
+    /*
+     * This function creates the skeleton of an AuthAttemptDto, filling in the required basic fields.
+     */
     private static (AuthAttemptDto attempt, Stopwatch stopwatch) CreateAttemptSkeleton(
         string username, string operation, AuthConfigDto config) {
+        
+
         var now = DateTimeOffset.UtcNow;
         var stopwatch = Stopwatch.StartNew();
 
@@ -280,7 +378,7 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
             Defences = new DefenceSnapshotDto {
                 PepperEnabled = config.PepperEnabled,
                 CaptchaEnabled = config.CaptchaEnabled,
-                TotpRequired = config.TotpRequired,
+                //TOTP Required is filled by the user - by default false
                 RateLimitEnabled = config.RateLimitEnabled,
                 LockoutEnabled = config.LockoutEnabled
             },
@@ -289,14 +387,18 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
         return (attempt, stopwatch);
     }
 
+    /*
+     * This function finalizes an AuthAttemptDto by stopping the stopwatch and calculating latency.
+     */
     private static AuthAttemptDto FinishAttempt(AuthAttemptDto attempt, Stopwatch stopwatch) {
         stopwatch.Stop();
         attempt.LatencyMs = (int)stopwatch.Elapsed.TotalMilliseconds;
         return attempt;
     }
-    private static string BuildHashVariantKey(AuthConfigDto config) {
-        var algo = config.HashAlgorithm.ToLowerInvariant();  // "sha256" / "bcrypt" / "argon2id"
-        return config.PepperEnabled ? $"{algo}+pepper" : algo;
+    /*
+     * This function builds the hash variant key used to look up UserHash entries based on the current config.
+     */
+    private static string GetHashVariantKey(AuthConfigDto config) {
+        return config.HashAlgorithm; // "SHA256" / "BCRYPT" / "ARGON2ID"
     }
-
 }
