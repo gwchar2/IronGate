@@ -14,6 +14,7 @@ namespace IronGate.Api.Controllers;
  * TODO: Implement username validator (Can't be empty, etc...) 
  * TODO: Implement password validator (Certain strength? Do we need this?)
  * TODO: Make sure that github is working properly
+ * TODO: Another attempt
  */
 
 [ApiController]
