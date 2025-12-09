@@ -1,6 +1,5 @@
 ﻿using IronGate.Api.Controllers.Requests;
 using IronGate.Api.Features.Auth.AuthService;
-using IronGate.Api.Features.Captcha.CaptchaService;
 using IronGate.Api.Features.Auth.Dtos;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,7 +13,9 @@ namespace IronGate.Api.Controllers;
  * TODO: Implement GROUP_SEED checker for captcha (Can input any parameter we want (except empty...) and it returns a captcha...)
  * TODO: Implement username validator (Can't be empty, etc...) 
  * TODO: Implement password validator (Certain strength? Do we need this?)
+ * TODO: Make sure that github is working properly
  */
+
 [ApiController]
 [Route("api/[controller]")]
 public sealed class AuthController(IAuthService authService) : ControllerBase {
