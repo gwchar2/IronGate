@@ -10,15 +10,17 @@ using IronGate.Core.Security;
 using IronGate.Core.Security.TotpValidator;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
-
+using Microsoft.AspNetCore.Http;
 namespace IronGate.Api.Features.Auth.AuthService;
 
-public sealed class AuthService(AppDbContext db,IConfigService configService,IPasswordHasher passwordHasher,ITotpValidator totpValidator,ICaptchaService captchaService,string pepper) : IAuthService {
+public sealed class AuthService(AppDbContext db,IConfigService configService,IPasswordHasher passwordHasher,ITotpValidator totpValidator,ICaptchaService captchaService,
+    IHttpContextAccessor httpContextAccessor, string pepper) : IAuthService {
     private readonly AppDbContext _db = db;
     private readonly IConfigService _configService = configService;
     private readonly IPasswordHasher _passwordHasher = passwordHasher;
     private readonly ITotpValidator _totpValidator = totpValidator;
     private readonly ICaptchaService _captchaService = captchaService;
+    private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
     private readonly string _pepper = pepper;
 
     /*
@@ -31,10 +33,18 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
 
         var config = await _configService.GetConfigAsync(cancellationToken);
 
+
         var (attempt, stopwatch) = CreateAttemptSkeleton(
             username: request.Username,
             operation: "REGISTER",
             config);
+
+
+        if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password)){ 
+            attempt.Success = false;
+            attempt.Result = AuthResultCode.Fail;
+            return FinishAttempt(attempt, stopwatch);
+        }
 
         try {
             var existing = await _db.Users.SingleOrDefaultAsync(u => u.Username == request.Username, cancellationToken);
@@ -152,15 +162,23 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
                 attempt.Result = AuthResultCode.Fail;
                 return FinishAttempt(attempt, stopwatch);
             }
+            // We mark the latest attempt to now
+            user.LastLoginAttemptAt = DateTime.UtcNow;
 
             // We grab the current hash variant key from config
             var hashVariant = GetHashVariantKey(config);
 
             // We get the specific hash row for this user matching the current config
-            var userHash = await _db.UserHashes.SingleOrDefaultAsync(h => h.UserId == user.Id && h.HashAlgorithm == hashVariant, cancellationToken);
+            var userHash = await _db.UserHashes.SingleOrDefaultAsync(
+                h => h.UserId == user.Id && 
+                h.HashAlgorithm == hashVariant &&
+                h.PepperEnabled == config.PepperEnabled, cancellationToken);
 
             // If there isnt a hashed password for the user..... WEEEEEIIIIRRDDDD
             if (userHash is null) {
+                RegisterFailedAttempt(user, config);
+                await _db.SaveChangesAsync(cancellationToken);
+
                 attempt.Success = false;
                 attempt.Result = AuthResultCode.Fail;
                 return FinishAttempt(attempt, stopwatch);
@@ -172,12 +190,18 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
                 userHash);
 
             if (!passwordValid) {
+                RegisterFailedAttempt(user, config);
+                await _db.SaveChangesAsync(cancellationToken);
+
                 attempt.Success = false;
                 attempt.Result = AuthResultCode.Fail;
                 return FinishAttempt(attempt, stopwatch);
             }
 
-            // If TOTP is enabled, returns TotpRequired resultcode.
+
+            /* Up until now, password is valid */
+
+            // TOTP Enabled -> No Captcha required (per instructions)
             if (user.TotpEnabled) {
                 attempt.Success = false;
                 attempt.TotpRequired = true;
@@ -185,13 +209,19 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
                 return FinishAttempt(attempt, stopwatch);
             }
 
-            /*
-             * TODO: Implement here what if the user REQUIRES CAPTCHA or LOCKOUT steps in future.
-             */
+            // If rate limit says CAPTCHA is required
+            if (ShouldRequireCaptcha(user, config)) {
+                attempt.Success = false;
+                attempt.Result = AuthResultCode.CaptchaRequired;
+                attempt.CaptchaRequired = true;
+                return FinishAttempt(attempt, stopwatch);
+            }
 
-            // Password only login is enough under current profile
+            // Password only login is successful here
             attempt.Success = true;
             attempt.Result = AuthResultCode.Success;
+            RegisterSuccessfulLogin(user);
+            await _db.SaveChangesAsync(cancellationToken);
             return FinishAttempt(attempt, stopwatch);
         }
         catch {
@@ -224,8 +254,6 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
                 return FinishAttempt(attempt, stopwatch);
             }
 
-            attempt.TotpRequired = user.TotpEnabled;            // The attempt requires a TOTP only if the user requires one. If this is false, it will fail this specific request later on (line 240)
-
             /* PASSWORD  VERIFICATION */
             // We grab the current hash variant key from config
             var hashVariant = GetHashVariantKey(config);
@@ -235,6 +263,9 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
 
             // If there isnt a hashed password for the user..... WEEEEEIIIIRRDDDD
             if (userHash is null) {
+                RegisterFailedAttempt(user, config);
+                await _db.SaveChangesAsync(cancellationToken);
+
                 attempt.Success = false;
                 attempt.Result = AuthResultCode.Fail;
                 return FinishAttempt(attempt, stopwatch);
@@ -245,18 +276,27 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
                 userHash);
 
             if (!passwordValid) {
+                RegisterFailedAttempt(user, config);
+                await _db.SaveChangesAsync(cancellationToken);
+
+                attempt.Success = false;
+                attempt.Result = AuthResultCode.Fail;
+                return FinishAttempt(attempt, stopwatch);
+            }
+            /* Up until now, password is valid. */
+
+            /* TOTP VALIDATION */
+            // If the user does not have TOTP enabled, return failure, since this is the wrong endpoint!
+            if (!(user.TotpEnabled)) {
+                RegisterFailedAttempt(user, config);
+                await _db.SaveChangesAsync(cancellationToken);
+
                 attempt.Success = false;
                 attempt.Result = AuthResultCode.Fail;
                 return FinishAttempt(attempt, stopwatch);
             }
 
-            /* TOTP VALIDATION */
-            // If the user does not have TOTP enabled, return failure.
-            if (!(user.TotpEnabled)) {
-                attempt.Success = false;
-                attempt.Result = AuthResultCode.Fail;
-                return FinishAttempt(attempt, stopwatch);
-            }
+            attempt.TotpRequired = user.TotpEnabled;            // The attempt requires a TOTP only if the user requires one. If this is false, it will fail this specific request later on (line 240)
 
             // Validate TOTP code
             var totpValid = _totpValidator.ValidateCode(
@@ -264,13 +304,19 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
                 request.TotpCode);
 
             if (!totpValid) {
+                RegisterFailedAttempt(user, config);
+                await _db.SaveChangesAsync(cancellationToken);
+
                 attempt.Success = false;
                 attempt.Result = AuthResultCode.Fail;
                 return FinishAttempt(attempt, stopwatch);
             }
 
+            /* FULL SUCCESS! Password + TOTP are valid */
             attempt.Success = true;
             attempt.Result = AuthResultCode.Success;
+            RegisterSuccessfulLogin(user);
+            await _db.SaveChangesAsync(cancellationToken);
             return FinishAttempt(attempt, stopwatch);
         }
         catch {
@@ -296,11 +342,25 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
             config: config);
 
         try {
+            if (!config.CaptchaEnabled) {
+                attempt.Success = false;
+                attempt.Result = AuthResultCode.Fail;
+                return FinishAttempt(attempt, stopwatch);
+            }
+
             var user = await _db.Users.SingleOrDefaultAsync(u => u.Username == request.Username, cancellationToken);
 
             if (user is null) {
                 attempt.Success = false;
                 attempt.Result = AuthResultCode.Fail;
+                return FinishAttempt(attempt, stopwatch);
+            }
+
+            /* If TOTP is also required, Captcha flow show not be used! It must be a TOTP request...*/
+            if (user.TotpEnabled) {
+                attempt.Success = false;
+                attempt.Result = AuthResultCode.TotpRequired;
+                attempt.TotpRequired = true;
                 return FinishAttempt(attempt, stopwatch);
             }
 
@@ -310,6 +370,9 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
                 cancellationToken);
 
             if (!captchaValid) {
+                RegisterFailedAttempt(user, config);
+                await _db.SaveChangesAsync(cancellationToken);
+
                 attempt.Success = false;
                 attempt.Result = AuthResultCode.CaptchaRequired;
                 attempt.CaptchaRequired = true;     
@@ -322,6 +385,9 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
             var userHash = await _db.UserHashes.SingleOrDefaultAsync(h => h.UserId == user.Id && h.HashAlgorithm == hashVariant,cancellationToken);
 
             if (userHash is null) {
+                RegisterFailedAttempt(user, config);
+                await _db.SaveChangesAsync(cancellationToken);
+
                 attempt.Success = false;
                 attempt.Result = AuthResultCode.Fail;
                 return FinishAttempt(attempt, stopwatch);
@@ -332,21 +398,19 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
                 userHash);
 
             if (!passwordValid) {
+                RegisterFailedAttempt(user, config);
+                await _db.SaveChangesAsync(cancellationToken);
+
                 attempt.Success = false;
                 attempt.Result = AuthResultCode.Fail;
-                return FinishAttempt(attempt, stopwatch);
-            }
-
-            /* If TOTP is also required */
-            if (user.TotpEnabled) {
-                attempt.Success = false;
-                attempt.Result = AuthResultCode.TotpRequired;
                 return FinishAttempt(attempt, stopwatch);
             }
 
             // Captcha + password are OK
             attempt.Success = true;
             attempt.Result = AuthResultCode.Success;
+            RegisterSuccessfulLogin(user);
+            await _db.SaveChangesAsync(cancellationToken);
             return FinishAttempt(attempt, stopwatch);
         }
         catch {
@@ -355,8 +419,6 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
             return FinishAttempt(attempt, stopwatch);
         }
     }
-
-
 
     /*
      * This function creates the skeleton of an AuthAttemptDto, filling in the required basic fields.
@@ -395,10 +457,69 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
         attempt.LatencyMs = (int)stopwatch.Elapsed.TotalMilliseconds;
         return attempt;
     }
+
+    /*
+     * This function registers a failed login attempt for lockout purposes.
+     */
+    private static void RegisterFailedAttempt(User user, AuthConfigDto config) {
+        // Hard failures that reach here count as an attempt, important because we can have 
+        // a situation where LockoutEnabled = false but CaptchaRequired = true
+        user.FailedAttemptsInWindow++;
+
+        // If the conditions for lockout are met, set the lockout time & reset failed attempts
+        if (config.LockoutEnabled &&
+            config.LockoutThreshold.HasValue &&
+            config.LockoutDurationSeconds.HasValue &&
+            user.FailedAttemptsInWindow >= config.LockoutThreshold.Value) {
+
+
+            user.LockoutUntil = DateTime.UtcNow.AddSeconds(config.LockoutDurationSeconds.Value);
+            user.FailedAttemptsInWindow = 0;
+        }
+    }
+
+    /*
+     * This function registers a successful login, resetting failed attempt counters.
+     */
+    private static void RegisterSuccessfulLogin(User user) {
+        user.FailedAttemptsInWindow = 0;
+        user.LockoutUntil = null;
+        user.LastLoginSuccessAt = DateTime.UtcNow;
+    }
+
     /*
      * This function builds the hash variant key used to look up UserHash entries based on the current config.
      */
     private static string GetHashVariantKey(AuthConfigDto config) {
         return config.HashAlgorithm; // "SHA256" / "BCRYPT" / "ARGON2ID"
+    }
+
+    /*
+     * This function determines if a CAPTCHA is required for the given user based on the current config and user state.
+     */
+    private static bool ShouldRequireCaptcha(User user, AuthConfigDto config) {
+        if (!config.CaptchaEnabled || !config.CaptchaAfterFailedAttempts.HasValue)
+            return false;
+
+        // According to the instructions, if TOTP is enabled, CAPTCHA is not required.
+        if (user.TotpEnabled)
+            return false;
+
+        // Check if the user's failed attempts are higher then the threshold
+        return user.FailedAttemptsInWindow >= config.CaptchaAfterFailedAttempts.Value;
+    }
+
+    /*
+     * This function checks if a CAPTCHA is required due to rate limiting, based on HttpContext.
+     */
+    private bool IsCaptchaRequiredByRateLimit() {
+        var httpContext = _httpContextAccessor.HttpContext;
+        if (httpContext is null)
+            return false;
+
+        if (!httpContext.Items.TryGetValue("CaptchaRequiredByRateLimit", out var value))
+            return false;
+
+        return value is bool b && b;
     }
 }

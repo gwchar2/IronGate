@@ -1,7 +1,11 @@
 ﻿using IronGate.Api.Controllers.Requests;
 using IronGate.Api.Features.Auth.AuthService;
 using IronGate.Api.Features.Auth.Dtos;
+using IronGate.Api.Features.Auth.Filters;
+using IronGate.Api.Features.Lockout;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Data.Common;
 
 namespace IronGate.Api.Controllers;
 
@@ -9,12 +13,7 @@ namespace IronGate.Api.Controllers;
 /*
  * TODO: Implement Endpointfilters for Rate Limiting + Logic
  * TODO: Implement Endpointfilters for Lockout + Logic
- * TODO: Implement logging of AuthAttempts to DB
- * TODO: Implement GROUP_SEED checker for captcha (Can input any parameter we want (except empty...) and it returns a captcha...)
- * TODO: Implement username validator (Can't be empty, etc...) 
- * TODO: Implement password validator (Certain strength? Do we need this?)
- * TODO: Make sure that github is working properly
- * TODO: Another attempt
+ * TODO: Implement in log-in (all types) what if the user REQUIRES CAPTCHA + TOTP combination?
  */
 
 [ApiController]
@@ -36,15 +35,18 @@ public sealed class AuthController(IAuthService authService) : ControllerBase {
             return Created(string.Empty, attempt);
         }
         catch (Exception ex) {
+
             return StatusCode(StatusCodes.Status500InternalServerError, new {
                 error = "Unexpected error during registration.",
                 detail = ex.Message
             });
-        }
+        } 
     }
 
     // POST /api/auth/login
     [HttpPost("login")]
+    [ServiceFilter(typeof(LockoutActionFilter))]
+    [ServiceFilter(typeof(RateLimitActionFilter))]
     public async Task<ActionResult<AuthAttemptDto>> Login(
         [FromBody] LoginRequest request, CancellationToken cancellationToken) {
         try {
@@ -68,6 +70,7 @@ public sealed class AuthController(IAuthService authService) : ControllerBase {
 
     // POST: /api/auth/login/totp
     [HttpPost("login/totp")]
+    [ServiceFilter(typeof(LockoutActionFilter))]
     public async Task<ActionResult<AuthAttemptDto>> LoginTotp(
         [FromBody] LoginTotpRequest request, CancellationToken cancellationToken) {
         try {
@@ -90,6 +93,7 @@ public sealed class AuthController(IAuthService authService) : ControllerBase {
     
     // POST: /api/auth/login/captcha
     [HttpPost("login/captcha")]
+    [ServiceFilter(typeof(LockoutActionFilter))]
     public async Task<ActionResult<AuthAttemptDto>> LoginWithCaptcha(
         [FromBody] LoginCaptchaRequest request,CancellationToken cancellationToken) {
         try {

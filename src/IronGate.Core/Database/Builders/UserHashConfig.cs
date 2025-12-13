@@ -27,7 +27,15 @@ public class UserHashConfig : IEntityTypeConfiguration<UserHash> {
 
         builder.Property(x => x.CreatedAt)
             .IsRequired();
+        
+        builder.Property(x => x.PepperEnabled)
+            .HasDefaultValue(false)
+            .IsRequired();
 
-        builder.HasIndex(x => new { x.UserId, x.HashAlgorithm }).IsUnique();
+        builder.HasIndex(x => new { 
+            x.UserId, 
+            x.HashAlgorithm, 
+            x.PepperEnabled 
+        }).IsUnique();
     }
 }
