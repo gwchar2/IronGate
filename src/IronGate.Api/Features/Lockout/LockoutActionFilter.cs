@@ -50,16 +50,13 @@ public sealed class LockoutActionFilter(AppDbContext db, IConfigService configSe
 
         await next();
     }
-
-    private static string? ExtractUsername(IDictionary<string, object?> actionArguments) {
+    public static string? ExtractUsername(IDictionary<string, object?> actionArguments) {
         foreach (var arg in actionArguments.Values) {
             switch (arg) {
                 case LoginRequest login:
                     return login.Username;
                 case LoginTotpRequest loginTotp:
                     return loginTotp.Username;
-                case LoginCaptchaRequest loginCaptcha:
-                    return loginCaptcha.Username;
             }
         }
 

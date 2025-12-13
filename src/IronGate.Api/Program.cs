@@ -1,6 +1,7 @@
 using IronGate.Api.Features.Auth.AuthService;
 using IronGate.Api.Features.Auth.Filters;
 using IronGate.Api.Features.Auth.PasswordHasher;
+using IronGate.Api.Features.Captcha;
 using IronGate.Api.Features.Captcha.CaptchaService;
 using IronGate.Api.Features.Config.ConfigService;
 using IronGate.Api.Features.Lockout;
@@ -26,25 +27,28 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 
-/* Registering Services */
+/* Registering Action Filters */
 builder.Services.AddScoped<LockoutActionFilter>();
 builder.Services.AddScoped<RateLimitActionFilter>();
+builder.Services.AddScoped<CaptchaActionFilter>();
+
+/* Registering other services */
 builder.Services.AddSingleton<IRateLimiter, RateLimiter>();
 builder.Services.AddSingleton<IPasswordHasher>(_ => new PasswordHasher(pepper));
 builder.Services.AddScoped<ITotpValidator, TotpValidator>();
 builder.Services.AddSingleton<ICaptchaService, CaptchaService>();
 builder.Services.AddScoped<IConfigService, ConfigService>();
 builder.Services.AddHttpContextAccessor();
+
+/* Registering Auth Service */
 builder.Services.AddScoped<IAuthService>(sp =>
 {
-    var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
     var dbCtx = sp.GetRequiredService<AppDbContext>();
     var configService = sp.GetRequiredService<IConfigService>();
     var hasher = sp.GetRequiredService<IPasswordHasher>();
     var totp = sp.GetRequiredService<ITotpValidator>();
-    var captcha = sp.GetRequiredService<ICaptchaService>();
 
-    return new AuthService(dbCtx, configService, hasher, totp, captcha, httpContextAccessor, pepper);
+    return new AuthService(dbCtx, configService, hasher, totp, pepper);
 });
 
 /* Build the App (API + DB) */

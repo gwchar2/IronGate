@@ -1,4 +1,5 @@
-﻿using IronGate.Api.Controllers.Requests;
+﻿
+using IronGate.Api.Controllers.Requests;
 using IronGate.Api.Features.Rate_Limiting;
 using IronGate.Api.Features.Config.ConfigService;
 using Microsoft.AspNetCore.Mvc;
@@ -12,13 +13,9 @@ public sealed class RateLimitActionFilter(IRateLimiter rateLimiter, IConfigServi
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context,ActionExecutionDelegate next) {
 
-
-        // Only apply rate limiting to login requests
-        var loginRequest = context.ActionArguments.Values
-           .OfType<LoginRequest>()
-           .FirstOrDefault();
-
-        if (loginRequest is null) {
+        // Extract the username from the action arguments
+        var username = ExtractUsername(context.ActionArguments);
+        if (username is null) {
             await next();
             return;
         }
@@ -36,7 +33,7 @@ public sealed class RateLimitActionFilter(IRateLimiter rateLimiter, IConfigServi
         // Get the client's IP address and construct a unique key of username + IP
         var nowUtc = DateTime.UtcNow;
         var ip = context.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-        var key = $"{ip}:{loginRequest.Username}";
+        var key = $"{ip}:{username}";
 
         var captchaThreshold = config.CaptchaEnabled
           ? config.CaptchaAfterFailedAttempts
@@ -55,7 +52,6 @@ public sealed class RateLimitActionFilter(IRateLimiter rateLimiter, IConfigServi
                 return;
 
             case RateLimitStatus.CaptchaRequired:
-                // Mark on HttpContext so AuthService can react
                 context.HttpContext.Items["CaptchaRequiredByRateLimit"] = true;
                 await next();
                 return;
@@ -78,20 +74,17 @@ public sealed class RateLimitActionFilter(IRateLimiter rateLimiter, IConfigServi
                 return;
         }
     }
-
-    // Extracts the username from the action sent to the controller
-    private static string? ExtractUsername(IDictionary<string, object?> actionArguments) {
+    public static string? ExtractUsername(IDictionary<string, object?> actionArguments) {
         foreach (var arg in actionArguments.Values) {
             switch (arg) {
                 case LoginRequest login:
                     return login.Username;
                 case LoginTotpRequest loginTotp:
                     return loginTotp.Username;
-                case LoginCaptchaRequest loginCaptcha:
-                    return loginCaptcha.Username;
             }
         }
 
         return null;
     }
+
 }

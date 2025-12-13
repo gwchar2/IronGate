@@ -37,14 +37,6 @@ public sealed class RateLimiter() : IRateLimiter {
                     retryAfter);
             }
 
-            // CAPTCHA stage (only if configured)
-            if (captchaAfterAttempts.HasValue &&
-                state.Count >= captchaAfterAttempts.Value) {
-                return new RateLimitResult(
-                    RateLimitStatus.CaptchaRequired,
-                    null);
-            }
-
             return new RateLimitResult(
                 RateLimitStatus.Ok,
                 null);

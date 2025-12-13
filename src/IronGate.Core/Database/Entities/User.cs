@@ -19,7 +19,10 @@ public class User {
     /* TOTP */
     public bool TotpEnabled { get; set; }           // does this user use TOTP at all?
     public string? TotpSecret { get; set; }         // shared secret (Base32), null if not using TOTP
-    public DateTime? TotpRegisteredAt { get; set; } 
+    public DateTime? TotpRegisteredAt { get; set; }
+
+    /* Captcha */
+    public bool CaptchaRequired { get; set; } = false;
 
 
     /* PASSWORD HASHES */

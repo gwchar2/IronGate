@@ -7,5 +7,4 @@ public interface IAuthService {
     Task<AuthAttemptDto> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default);
     Task<AuthAttemptDto> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default);
     Task<AuthAttemptDto> LoginTotpAsync(LoginTotpRequest request, CancellationToken cancellationToken = default);
-    Task<AuthAttemptDto> LoginWithCaptchaAsync(LoginCaptchaRequest request, CancellationToken cancellationToken = default);
 }
