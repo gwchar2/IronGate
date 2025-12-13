@@ -17,7 +17,7 @@ public sealed class AdminController(ICaptchaService captchaService) : Controller
         
         if (string.IsNullOrWhiteSpace(groupSeed))
             return BadRequest(new { 
-                error = "groupSeed is required." 
+                error = "Group Seed is required." 
             });
 
         var token = await _captchaService.IssueTokenAsync(groupSeed, cancellationToken);

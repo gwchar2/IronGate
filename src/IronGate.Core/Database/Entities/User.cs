@@ -9,10 +9,12 @@ public class User {
     public string PlainPassword { get; set; } = null!;           // research dataset only
     public string PasswordStrengthCategory { get; set; } = "";   // "weak", "medium", "strong" etc.
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime? LastLoginSuccessAt { get; set; } 
-    public DateTime? LastLoginAttemptAt { get; set; }
+
+    /* Lockout & Rate Limiting */
     public int FailedAttemptsInWindow { get; set; }
     public DateTime? LockoutUntil { get; set; }
+    public DateTime? LastLoginSuccessAt { get; set; } 
+    public DateTime? LastLoginAttemptAt { get; set; }
 
     /* TOTP */
     public bool TotpEnabled { get; set; }           // does this user use TOTP at all?

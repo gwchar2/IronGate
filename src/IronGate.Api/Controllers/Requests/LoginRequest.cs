@@ -1,4 +1,6 @@
-﻿namespace IronGate.Api.Controllers.Requests;
+﻿
+
+namespace IronGate.Api.Controllers.Requests;
 
 
 /*
