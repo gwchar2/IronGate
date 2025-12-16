@@ -3,6 +3,8 @@ obj/
 out/
 Debug/
 Release/
+logs/
+*.jsonl
 .vs/
 *.logs
 *.secret.json
