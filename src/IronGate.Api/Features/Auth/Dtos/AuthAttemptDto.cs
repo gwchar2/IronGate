@@ -3,7 +3,7 @@
 public sealed class AuthAttemptDto {
     /* Username and operation */
     public string Username { get; set; } = null!;
-    public string Operation { get; set; } = null!;          // "REGISTER" | "LOGIN" | "LOGIN_TOTP"
+    public string Operation { get; set; } = null!;          // "REGISTER","LOGIN","LOGIN_TOTP"
 
     /* Time metrics */
     public DateTimeOffset Timestamp { get; set; }           // Start time
@@ -14,7 +14,7 @@ public sealed class AuthAttemptDto {
     public AuthResultCode Result { get; set; }
 
     /* Password Hashing Details */
-    public string HashAlgorithm { get; set; } = null!;      // "SHA256" | "BCRYPT" | "ARGON2ID"
+    public string HashAlgorithm { get; set; } = null!;      // "SHA256","BCRYPT","ARGON2ID"
 
     /* TOTP Requirement */
     public bool TotpRequired { get; set; } = false;

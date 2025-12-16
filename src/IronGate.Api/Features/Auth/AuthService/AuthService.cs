@@ -9,13 +9,16 @@ using IronGate.Core.Security;
 using IronGate.Core.Security.TotpValidator;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
+using IronGate.Api.JsonlLogging;
+using IronGate.Api.JsonlLogging.AttemptsService;
 namespace IronGate.Api.Features.Auth.AuthService;
 
-public sealed class AuthService(AppDbContext db,IConfigService configService,IPasswordHasher passwordHasher,ITotpValidator totpValidator, string pepper) : IAuthService {
+public sealed class AuthService(AppDbContext db,IConfigService configService,IPasswordHasher passwordHasher,ITotpValidator totpValidator,IAttemptsJsonlSink attemptsJsonlSink, string pepper) : IAuthService {
     private readonly AppDbContext _db = db;
     private readonly IConfigService _configService = configService;
     private readonly IPasswordHasher _passwordHasher = passwordHasher;
     private readonly ITotpValidator _totpValidator = totpValidator;
+    private readonly IAttemptsJsonlSink _attemptsJsonlSink = attemptsJsonlSink;
     private readonly string _pepper = pepper;
 
     /*
@@ -346,9 +349,10 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
     /*
      * This function finalizes an AuthAttemptDto by stopping the stopwatch and calculating latency.
      */
-    private static AuthAttemptDto FinishAttempt(AuthAttemptDto attempt, Stopwatch stopwatch) {
+    private AuthAttemptDto FinishAttempt(AuthAttemptDto attempt, Stopwatch stopwatch) {
         stopwatch.Stop();
         attempt.LatencyMs = (int)stopwatch.Elapsed.TotalMilliseconds;
+        _attemptsJsonlSink.TryEnqueue(attempt);
         return attempt;
     }
 
