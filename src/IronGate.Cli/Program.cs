@@ -57,38 +57,27 @@ namespace IronGate.Cli {
                 return 1;
             }
         }
-
+        /*
+         * Parses help flags
+         */
         private static bool IsHelp(string s)
             => s.Equals("--help", StringComparison.OrdinalIgnoreCase) ||
                s.Equals("-h", StringComparison.OrdinalIgnoreCase) ||
                s.Equals("help", StringComparison.OrdinalIgnoreCase);
 
+        /*
+         * Parses unknown command
+         */
         private static int Unknown(string cmd) {
             Console.Error.WriteLine($"Unknown command: {cmd}");
             PrintHelp();
             return 2;
         }
 
-        private static void PrintHelp() {
-            Console.WriteLine("IronGate.Cli");
-            Console.WriteLine();
-            Console.WriteLine("Commands:");
-            Console.WriteLine("  register <username> <password>");
-            Console.WriteLine("  config get");
-            Console.WriteLine("  config set <pathToJson>");
-            Console.WriteLine("  captcha token");
-            Console.WriteLine("  attack (stub)");
-            Console.WriteLine();
-            Console.WriteLine("Examples:");
-            Console.WriteLine("  IronGate.Cli.exe register alice \"Pass123!\"");
-            Console.WriteLine("  IronGate.Cli.exe config get");
-            Console.WriteLine("  IronGate.Cli.exe config set .\\config.json");
-            Console.WriteLine("  IronGate.Cli.exe captcha token");
-        }
-
-        // ---------------------------
-        // register <username> <password>
-        // ---------------------------
+        /*
+         * Parses register command
+         * Uses the register endpoint to create a new user
+         */
         private static async Task<int> RegisterAsync(HttpClient http, string[] args) {
             if (args.Length < 3) {
                 Console.Error.WriteLine("Usage: register <username> <password>");
@@ -107,9 +96,10 @@ namespace IronGate.Cli {
             }
         }
 
-        // ---------------------------
-        // config get | set <file>
-        // ---------------------------
+        /*
+         * Parses config command
+         * Uses the config endpoint to get or set configuration
+         */
         private static async Task<int> ConfigAsync(HttpClient http, string[] args) {
             if (args.Length < 2) {
                 Console.Error.WriteLine("Usage: config get | config set <pathToJson>");
@@ -158,9 +148,10 @@ namespace IronGate.Cli {
             return 2;
         }
 
-        // ---------------------------
-        // captcha token
-        // ---------------------------
+        /*
+         * Parses captcha command
+         * Uses the captcha endpoint to get a token
+         */
         private static async Task<int> CaptchaAsync(HttpClient http, string[] args) {
             if (args.Length < 2) {
                 Console.Error.WriteLine("Usage: captcha token");
@@ -178,9 +169,41 @@ namespace IronGate.Cli {
             Console.Error.WriteLine("Usage: create captcha");
             return 2;
         }
-        // ---------------------------
-        // response printing
-        // ---------------------------
+
+
+
+        /*
+         * Parses attack command
+         * Attacks the server via Bruteforce or Password spraying (stub for now)
+         */
+        private static int AttackStub(string[] args) {
+            Console.Error.WriteLine("attack is a stub for now.");
+            return 2;
+        }
+
+        /*
+         * Prints the help/usage information
+         */
+        private static void PrintHelp() {
+            Console.WriteLine("IronGate.Cli");
+            Console.WriteLine();
+            Console.WriteLine("Commands:");
+            Console.WriteLine("  register <username> <password>");
+            Console.WriteLine("  config get");
+            Console.WriteLine("  config set <pathToJson>");
+            Console.WriteLine("  captcha token");
+            Console.WriteLine("  attack (stub)");
+            Console.WriteLine();
+            Console.WriteLine("Examples:");
+            Console.WriteLine("  IronGate.Cli.exe register alice \"Pass123!\"");
+            Console.WriteLine("  IronGate.Cli.exe config get");
+            Console.WriteLine("  IronGate.Cli.exe config set .\\config.json");
+            Console.WriteLine("  IronGate.Cli.exe captcha token");
+        }
+
+        /*
+         * Prints the HTTP response
+         */
         private static async Task<int> PrintResponseAsync(HttpResponseMessage resp) {
             var body = await resp.Content.ReadAsStringAsync();
 
@@ -196,6 +219,9 @@ namespace IronGate.Cli {
             return resp.IsSuccessStatusCode ? 0 : 3;
         }
 
+        /*
+         * Tries to pretty-print JSON text
+         */
         private static bool TryPrettyPrintJson(string text, out string pretty) {
             pretty = string.Empty;
 
@@ -214,14 +240,6 @@ namespace IronGate.Cli {
             catch {
                 return false;
             }
-        }
-
-        // ---------------------------
-        // attack stub
-        // ---------------------------
-        private static int AttackStub(string[] args) {
-            Console.Error.WriteLine("attack is a stub for now.");
-            return 2;
         }
 
     }
