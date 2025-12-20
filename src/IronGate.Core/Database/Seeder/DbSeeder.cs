@@ -86,26 +86,29 @@ public static class DbSeeder {
                 new UserHash {
                     Id = Guid.NewGuid(),
                     UserId = user.Id,
-                    HashAlgorithm = "sha256+pepper",
+                    HashAlgorithm = "sha256",
                     Salt = shaSalt,
                     Hash = shaPepperHash,
-                    CreatedAt = now
+                    CreatedAt = now,
+                    PepperEnabled = true
                 },
                 new UserHash {
                     Id = Guid.NewGuid(),
                     UserId = user.Id,
-                    HashAlgorithm = "bcrypt+pepper",
+                    HashAlgorithm = "bcrypt",
                     Salt = "",
                     Hash = bcryptPepperHash,
-                    CreatedAt = now
+                    CreatedAt = now,
+                    PepperEnabled = true
                 },
                 new UserHash {
                     Id = Guid.NewGuid(),
                     UserId = user.Id,
-                    HashAlgorithm = "argon2id+pepper",
+                    HashAlgorithm = "argon2id",
                     Salt = argonSalt,
                     Hash = argonPepperHash,
-                    CreatedAt = now
+                    CreatedAt = now,
+                    PepperEnabled = true
                 }
             );
         }

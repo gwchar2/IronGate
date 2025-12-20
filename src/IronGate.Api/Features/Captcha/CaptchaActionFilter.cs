@@ -1,10 +1,12 @@
 ﻿using IronGate.Api.Controllers.Requests;
+using IronGate.Api.Features.Auth.Dtos;
 using IronGate.Api.Features.Captcha.CaptchaService;
 using IronGate.Api.Features.Config.ConfigService;
 using IronGate.Core.Database;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace IronGate.Api.Features.Captcha;
 
@@ -14,6 +16,7 @@ public sealed class CaptchaActionFilter(AppDbContext db, IConfigService configSe
     private readonly ICaptchaService _captchaService = captchaService;
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next) {
+        Stopwatch stopWatch = Stopwatch.StartNew();
         // Extract the username from the action arguments
         var username = ExtractUsername(context.ActionArguments);
         if (username is null) {
@@ -30,41 +33,82 @@ public sealed class CaptchaActionFilter(AppDbContext db, IConfigService configSe
         }
 
         // Get the current captcha settings from the DB
-        var captchaConfig = await _configService.GetConfigAsync();
-        if (!captchaConfig.CaptchaEnabled) {
+        var config = await _configService.GetConfigAsync();
+        if (!config.CaptchaEnabled) {
             await next();
             return;
         }
 
+        stopWatch.Stop();
         // If the captcha settings are not null and the user failed attempts exceed the threshold, validate the captcha
         // If there is no captcha, return unauthorized and request captcha
-        if ((captchaConfig.CaptchaAfterFailedAttempts.HasValue &&
-            user.FailedAttemptsInWindow >= captchaConfig.CaptchaAfterFailedAttempts.Value) || user.CaptchaRequired){
+        if ((config.CaptchaAfterFailedAttempts.HasValue &&
+            user.FailedAttemptsInWindow >= config.CaptchaAfterFailedAttempts.Value) || user.CaptchaRequired){
 
             // Get the captcha token
             var captchaToken = ExtractCaptcha(context.ActionArguments);
 
             // No captcha token provided
             if (string.IsNullOrWhiteSpace(captchaToken)) {
-                context.Result = new ObjectResult(new {
-                    error = "captcha_required",
-                    message = "Captcha token is required due to multiple failed login attempts."
-                }) {
-                    StatusCode = StatusCodes.Status401Unauthorized
+                var attempt = new AuthAttemptDto {
+                    Username = username,
+                    Operation = "LOGIN",
+                    Timestamp = DateTimeOffset.UtcNow,
+                    LatencyMs = (int)stopWatch.Elapsed.TotalMilliseconds,
+                    Success = false,
+                    Result = AuthResultCode.CaptchaRequired,
+
+                    HashAlgorithm = config.HashAlgorithm,
+                    TotpRequired = user.TotpEnabled,
+                    CaptchaRequired = user.CaptchaRequired,
+
+                    Defences = new DefenceSnapshotDto() {
+                        PepperEnabled = config.PepperEnabled,
+                        CaptchaEnabled = config.CaptchaEnabled,
+                        RateLimitEnabled = config.RateLimitEnabled,
+                        LockoutEnabled = config.LockoutEnabled
+                    }
                 };
+
+                context.Result = new ObjectResult(attempt) {
+                    StatusCode = StatusCodes.Status403Forbidden
+                };
+
+                user.FailedAttemptsInWindow++;
+                await _db.SaveChangesAsync(cancellationToken);
                 return;
             }
 
             // If captcha is not valid, return unauthorized
-            if (!await _captchaService.ValidateTokenAsync(captchaToken, context.HttpContext.RequestAborted)) {
-                context.Result = new ObjectResult(new {
-                    error = "invalid_captcha",
-                    message = "The provided captcha token is invalid or has expired."
-                }) {
-                    StatusCode = StatusCodes.Status401Unauthorized
+            if (!await _captchaService.ValidateTokenAsync(captchaToken, context.HttpContext.RequestAborted)) { 
+                var attempt = new AuthAttemptDto {
+                    Username = username,
+                    Operation = "LOGIN",
+                    Timestamp = DateTimeOffset.UtcNow,
+                    LatencyMs = (int)stopWatch.Elapsed.TotalMilliseconds,
+                    Success = false,
+                    Result = AuthResultCode.InvalidCaptcha,
+
+                    HashAlgorithm = config.HashAlgorithm,
+                    TotpRequired = user.TotpEnabled,
+                    CaptchaRequired = user.CaptchaRequired,
+
+                    Defences = new DefenceSnapshotDto() {
+                        PepperEnabled = config.PepperEnabled,
+                        CaptchaEnabled = config.CaptchaEnabled,
+                        RateLimitEnabled = config.RateLimitEnabled,
+                        LockoutEnabled = config.LockoutEnabled
+                    }
                 };
-                return;
-            }
+
+            context.Result = new ObjectResult(attempt) {
+                StatusCode = StatusCodes.Status403Forbidden
+            };
+
+            user.FailedAttemptsInWindow++;
+            await _db.SaveChangesAsync(cancellationToken);
+            return;
+        }
 
             // If it is is valid, continue to the action
             await next();

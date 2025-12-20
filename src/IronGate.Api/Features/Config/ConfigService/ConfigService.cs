@@ -21,7 +21,7 @@ public sealed class ConfigService(AppDbContext db) : IConfigService {
         AuthConfigDto request, CancellationToken cancellationToken = default) {
        
         var entity = await _db.ConfigProfile.SingleAsync(cancellationToken); 
-        if (request.HashAlgorithm is not ("SHA256" or "BCRYPT" or "ARGON2ID")) {
+        if (request.HashAlgorithm is not ("sha256" or "bcrypt" or "argon2id")) {
             throw new InvalidOperationException($"Unsupported hash algorithm: {request.HashAlgorithm}");
         }
 
@@ -43,8 +43,6 @@ public sealed class ConfigService(AppDbContext db) : IConfigService {
 
     private static AuthConfigDto MapToDto(DbConfigProfile entity) {
         return new AuthConfigDto {
-            Id = entity.Id,
-            Name = entity.Name,
             HashAlgorithm = entity.HashAlgorithm,
             PepperEnabled = entity.PepperEnabled,
             RateLimitEnabled = entity.RateLimitEnabled,

@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.Metrics;
+﻿
 using System.Security.Cryptography;
 using System.Text;
 
@@ -20,13 +20,6 @@ namespace IronGate.Core.Security.TotpValidator;
  * password
  * TOTP code only, e.g. "028394"
  */
-
-/*
- * In this project we have 2 options for aproaching TOTP as an attacker / defensive system:
- * 1) Automatically mark the attack as a "failed attempt" (Since it is impossible to guess TOTP codes within a 30 seconds timeframe)
- * 2) Give the attacker the TOTP Secret (From the user_seed file) and create a one time TOTP. This allows us to measure latency.
- */
-
 
 
 public sealed class TotpValidator : ITotpValidator {
@@ -66,7 +59,20 @@ public sealed class TotpValidator : ITotpValidator {
 
     }
 
+    /*
+     * A public generator, called by the CLI
+     */
+    public string GenerateCode(string secret) {
+        if (string.IsNullOrWhiteSpace(secret))
+            throw new ArgumentException($"TOTP secret is required. {nameof(secret)}");
 
+        byte[] key = Base32Decode(secret);
+
+        var unixTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var currentStep = (ulong)(unixTime / _timeStepSeconds);
+
+        return GenerateTotpCode(key, currentStep, _totpDigits);
+    }
     /*
      * Generates a binary TOTP code string based on the provided key and time step.
      */

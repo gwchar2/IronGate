@@ -3,6 +3,5 @@
 
 public enum RateLimitStatus {
     Ok,
-    CaptchaRequired,
     Blocked
 }

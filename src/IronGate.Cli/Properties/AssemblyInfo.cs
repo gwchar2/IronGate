@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("IronGate.Cli")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("IronGate")]
+[assembly: AssemblyDescription("IronGate is an endpoint registration, configuration & attack demo")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("IronGate.Cli")]
+[assembly: AssemblyCompany("Tommer Toledo 209706795")]
+[assembly: AssemblyProduct("IronGate")]
 [assembly: AssemblyCopyright("Copyright ©  2025")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

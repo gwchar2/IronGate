@@ -1,6 +1,6 @@
-﻿using IronGate.Api.Features.Auth.Dtos;
+﻿
 
-namespace IronGate.Api.Features.Config.Dtos;
+namespace IronGate.Cli.Helpers.Dto;
 
 public sealed class AuthConfigDto {
 

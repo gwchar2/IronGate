@@ -1,0 +1,217 @@
+{
+  "seed_group": "209706795",
+  "users": [
+    {
+      "username": "weak_alice",
+      "password": "123456",
+      "category": "weak",
+      "totp_enabled": false,
+      "secret_totp": null
+    },
+    {
+      "username": "weak_bob",
+      "password": "password",
+      "category": "weak",
+      "totp_enabled": false,
+      "secret_totp": null
+    },
+    {
+      "username": "weak_charlie",
+      "password": "qwerty",
+      "category": "weak",
+      "totp_enabled": false,
+      "secret_totp": null
+    },
+    {
+      "username": "weak_dana",
+      "password": "111111",
+      "category": "weak",
+      "totp_enabled": false,
+      "secret_totp": null
+    },
+    {
+      "username": "weak_eran",
+      "password": "abc123",
+      "category": "weak",
+      "totp_enabled": false,
+      "secret_totp": null
+    },
+    {
+      "username": "weak_fiona",
+      "password": "letmein",
+      "category": "weak",
+      "totp_enabled": false,
+      "secret_totp": null
+    },
+    {
+      "username": "weak_gil",
+      "password": "000000",
+      "category": "weak",
+      "totp_enabled": false,
+      "secret_totp": null
+    },
+    {
+      "username": "weak_hadas",
+      "password": "sunshine",
+      "category": "weak",
+      "totp_enabled": false,
+      "secret_totp": null
+    },
+    {
+      "username": "weak_igor",
+      "password": "iloveyou",
+      "category": "weak",
+      "totp_enabled": false,
+      "secret_totp": null
+    },
+    {
+      "username": "weak_seed",
+      "password": "209706795",
+      "category": "weak",
+      "totp_enabled": false,
+      "secret_totp": null
+    },
+
+    {
+      "username": "medium_alice",
+      "password": "Skyline2024",
+      "category": "medium",
+      "totp_enabled": false,
+      "secret_totp": null
+    },
+    {
+      "username": "medium_bob",
+      "password": "BlueRiver19",
+      "category": "medium",
+      "totp_enabled": false,
+      "secret_totp": null
+    },
+    {
+      "username": "medium_charlie",
+      "password": "Mountain88",
+      "category": "medium",
+      "totp_enabled": false,
+      "secret_totp": null
+    },
+    {
+      "username": "medium_dana",
+      "password": "Coffee92",
+      "category": "medium",
+      "totp_enabled": false,
+      "secret_totp": null
+    },
+    {
+      "username": "medium_eran",
+      "password": "Window73",
+      "category": "medium",
+      "totp_enabled": false,
+      "secret_totp": null
+    },
+    {
+      "username": "medium_fiona",
+      "password": "Summer21",
+      "category": "medium",
+      "totp_enabled": false,
+      "secret_totp": null
+    },
+    {
+      "username": "medium_gil",
+      "password": "Laptop307",
+      "category": "medium",
+      "totp_enabled": false,
+      "secret_totp": null
+    },
+    {
+      "username": "medium_hadas",
+      "password": "Silver39",
+      "category": "medium",
+      "totp_enabled": false,
+      "secret_totp": null
+    },
+    {
+      "username": "medium_igor",
+      "password": "Garden55",
+      "category": "medium",
+      "totp_enabled": false,
+      "secret_totp": null
+    },
+    {
+      "username": "medium_totp",
+      "password": "YellowTree41",
+      "category": "medium",
+      "totp_enabled": true,
+      "secret_totp": "JBSWY3DPEHPK3PXP"
+    },
+
+    {
+      "username": "strong_alice",
+      "password": "Gr33n!Forest_92",
+      "category": "strong",
+      "totp_enabled": true,
+      "secret_totp": "NB2W4Y3DPEHPK3PX"
+    },
+    {
+      "username": "strong_bob",
+      "password": "Blu3Ocean#714",
+      "category": "strong",
+      "totp_enabled": false,
+      "secret_totp": null
+    },
+    {
+      "username": "strong_charlie",
+      "password": "Red!Galaxy7_21",
+      "category": "strong",
+      "totp_enabled": true,
+      "secret_totp": "KRSXG5DSNFXGOIDP"
+    },
+    {
+      "username": "strong_dana",
+      "password": "NightSky*48!road",
+      "category": "strong",
+      "totp_enabled": false,
+      "secret_totp": null
+    },
+    {
+      "username": "strong_eran",
+      "password": "Ston3Wall@990",
+      "category": "strong",
+      "totp_enabled": false,
+      "secret_totp": null
+    },
+    {
+      "username": "strong_fiona",
+      "password": "Aur0ra$Light_77",
+      "category": "strong",
+      "totp_enabled": true,
+      "secret_totp": "MFRGGZDFMZTWQ2LK"
+    },
+    {
+      "username": "strong_gil",
+      "password": "P@ssw0rd?NoThanks9",
+      "category": "strong",
+      "totp_enabled": false,
+      "secret_totp": null
+    },
+    {
+      "username": "strong_hadas",
+      "password": "Wh!teHorse_64",
+      "category": "strong",
+      "totp_enabled": false,
+      "secret_totp": null
+    },
+    {
+      "username": "strong_igor",
+      "password": "C0pper&River_38",
+      "category": "strong",
+      "totp_enabled": true,
+      "secret_totp": "ONSWG4TFORXW4Y3D"
+    },
+    {
+      "username": "strong_judy",
+      "password": "Midn1ght#Train_5",
+      "category": "strong",
+      "totp_enabled": false,
+      "secret_totp": null
+    }
+  ]
+}

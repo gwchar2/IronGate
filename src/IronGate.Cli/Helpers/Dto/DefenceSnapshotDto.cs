@@ -1,4 +1,4 @@
-﻿namespace IronGate.Api.Features.Auth.Dtos;
+﻿namespace IronGate.Cli.Helpers.Dto;
 
 /*
  * DefenceSnapshotDto represents the current state of authentication defence mechanisms.

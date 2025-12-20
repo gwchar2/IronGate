@@ -1,4 +1,6 @@
-﻿namespace IronGate.Api.Features.Auth.Dtos;
+﻿using System;
+
+namespace IronGate.Cli.Helpers.Dto;
 
 public sealed class AuthAttemptDto {
     /* Username and operation */

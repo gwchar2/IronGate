@@ -1,4 +1,4 @@
-﻿namespace IronGate.Api.Features.Auth.Dtos;
+﻿namespace IronGate.Cli.Helpers.Dto;
 
 public enum AuthResultCode {
     Success = 0,

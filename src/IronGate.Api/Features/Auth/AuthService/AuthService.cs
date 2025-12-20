@@ -9,7 +9,6 @@ using IronGate.Core.Security;
 using IronGate.Core.Security.TotpValidator;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
-using IronGate.Api.JsonlLogging;
 using IronGate.Api.JsonlLogging.AttemptsService;
 namespace IronGate.Api.Features.Auth.AuthService;
 
@@ -70,21 +69,21 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
                 new UserHash {
                     Id = Guid.NewGuid(),
                     UserId = user.Id,
-                    HashAlgorithm = "SHA256",
+                    HashAlgorithm = "sha256",
                     Salt = shaSalt,
                     Hash = shaHash
                 },
                 new UserHash {
                     Id = Guid.NewGuid(),
                     UserId = user.Id,
-                    HashAlgorithm = "BCRYPT",
+                    HashAlgorithm = "bcrypt",
                     Salt = string.Empty, 
                     Hash = bcryptHash
                 },
                 new UserHash {
                     Id = Guid.NewGuid(),
                     UserId = user.Id,
-                    HashAlgorithm = "ARGON2ID",
+                    HashAlgorithm = "argon2id",
                     Salt = argonSalt,
                     Hash = argonHash
                 }
@@ -101,7 +100,7 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
                 new UserHash {
                     Id = Guid.NewGuid(),
                     UserId = user.Id,
-                    HashAlgorithm = "SHA256",
+                    HashAlgorithm = "sha256",
                     Salt = shaSalt,
                     Hash = shaPepperHash,
                     PepperEnabled = true
@@ -109,7 +108,7 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
                 new UserHash {
                     Id = Guid.NewGuid(),
                     UserId = user.Id,
-                    HashAlgorithm = "BCRYPT",
+                    HashAlgorithm = "bcrypt",
                     Salt = string.Empty,
                     Hash = bcryptPepperHash,
                     PepperEnabled = true
@@ -117,7 +116,7 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
                 new UserHash {
                     Id = Guid.NewGuid(),
                     UserId = user.Id,
-                    HashAlgorithm = "ARGON2ID",
+                    HashAlgorithm = "argon2id",
                     Salt = argonSalt,
                     Hash = argonPepperHash,
                     PepperEnabled = true
@@ -164,7 +163,7 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
             attempt.CaptchaRequired = user.CaptchaRequired;
 
             // We grab the current hash variant key from config
-            var hashVariant = GetHashVariantKey(config);
+            var hashVariant = GetHashVariantKey(config).ToLowerInvariant();
 
             // We get the specific hash row for this user matching the current config
             var userHash = await _db.UserHashes.SingleOrDefaultAsync(
@@ -179,6 +178,7 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
 
                 attempt.Success = false;
                 attempt.Result = AuthResultCode.Fail;
+                attempt.CaptchaRequired = user.CaptchaRequired;
                 return FinishAttempt(attempt, stopwatch);
             }
 
@@ -193,6 +193,7 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
 
                 attempt.Success = false;
                 attempt.Result = AuthResultCode.Fail;
+                attempt.CaptchaRequired = user.CaptchaRequired;
                 return FinishAttempt(attempt, stopwatch);
             }
 
@@ -200,9 +201,12 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
             /* Up until now, password is valid */
             // If TOTP is enabled for the user, we require it
             if (user.TotpEnabled) {
+                RegisterFailedAttempt(user, config);
+                await _db.SaveChangesAsync(cancellationToken);
                 attempt.Success = false;
                 attempt.TotpRequired = true;
                 attempt.Result = AuthResultCode.TotpRequired;
+                attempt.CaptchaRequired = user.CaptchaRequired;
                 return FinishAttempt(attempt, stopwatch);
             }
 
@@ -247,10 +251,12 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
 
             /* PASSWORD  VERIFICATION */
             // We grab the current hash variant key from config
-            var hashVariant = GetHashVariantKey(config);
+            var hashVariant = GetHashVariantKey(config).ToLowerInvariant();
 
-
-            var userHash = await _db.UserHashes.SingleOrDefaultAsync(h => h.UserId == user.Id && h.HashAlgorithm == hashVariant, cancellationToken);
+            var userHash = await _db.UserHashes.SingleOrDefaultAsync(
+                h => h.UserId == user.Id &&
+                h.HashAlgorithm == hashVariant &&
+                h.PepperEnabled == config.PepperEnabled, cancellationToken);
 
             // If there isnt a hashed password for the user..... WEEEEEIIIIRRDDDD
             if (userHash is null) {
@@ -259,47 +265,48 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
 
                 attempt.Success = false;
                 attempt.Result = AuthResultCode.Fail;
+                attempt.CaptchaRequired = user.CaptchaRequired;
                 return FinishAttempt(attempt, stopwatch);
             }
 
-            var passwordValid = _passwordHasher.VerifyPassword(
-                request.Password,
-                userHash);
+            var passwordValid = _passwordHasher.VerifyPassword(request.Password,userHash);
 
             if (!passwordValid) {
                 RegisterFailedAttempt(user, config);
                 await _db.SaveChangesAsync(cancellationToken);
 
                 attempt.Success = false;
+                attempt.TotpRequired = user.TotpEnabled;
                 attempt.Result = AuthResultCode.Fail;
+                attempt.CaptchaRequired = user.CaptchaRequired;
                 return FinishAttempt(attempt, stopwatch);
             }
             /* Up until now, password is valid. */
 
             /* TOTP VALIDATION */
             // If the user does not have TOTP enabled, return failure, since this is the wrong endpoint!
-            if (!(user.TotpEnabled)) {
+            if (!user.TotpEnabled) {
                 RegisterFailedAttempt(user, config);
                 await _db.SaveChangesAsync(cancellationToken);
 
                 attempt.Success = false;
                 attempt.Result = AuthResultCode.Fail;
+                attempt.CaptchaRequired = user.CaptchaRequired;
                 return FinishAttempt(attempt, stopwatch);
             }
 
             attempt.TotpRequired = user.TotpEnabled;            // The attempt requires a TOTP only if the user requires one. If this is false, it will fail this specific request later on (line 240)
 
             // Validate TOTP code
-            var totpValid = _totpValidator.ValidateCode(
-                user.TotpSecret!,
-                request.TotpCode);
+            var totpValid = _totpValidator.ValidateCode(user.TotpSecret!,request.TotpCode);
 
             if (!totpValid) {
                 RegisterFailedAttempt(user, config);
                 await _db.SaveChangesAsync(cancellationToken);
 
                 attempt.Success = false;
-                attempt.Result = AuthResultCode.Fail;
+                attempt.Result = AuthResultCode.InvalidTotp;
+                attempt.CaptchaRequired = user.CaptchaRequired;
                 return FinishAttempt(attempt, stopwatch);
             }
 
@@ -364,6 +371,10 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
         // a situation where LockoutEnabled = false but CaptchaRequired = true
         user.FailedAttemptsInWindow++;
 
+        if (config.CaptchaEnabled &&
+            user.FailedAttemptsInWindow >= config.CaptchaAfterFailedAttempts)
+            user.CaptchaRequired = true;
+
         // If the conditions for lockout are met, set the lockout time & reset failed attempts
         if (config.LockoutEnabled &&
             config.LockoutThreshold.HasValue &&
@@ -373,7 +384,6 @@ public sealed class AuthService(AppDbContext db,IConfigService configService,IPa
 
             user.LockoutUntil = DateTime.UtcNow.AddSeconds(config.LockoutDurationSeconds.Value);
             user.FailedAttemptsInWindow = 0;
-            user.CaptchaRequired = true;
         }
     }
 
