@@ -73,6 +73,9 @@ public sealed class CaptchaActionFilter(AppDbContext db, IConfigService configSe
                 context.Result = new ObjectResult(attempt) {
                     StatusCode = StatusCodes.Status403Forbidden
                 };
+
+                user.FailedAttemptsInWindow++;
+                await _db.SaveChangesAsync(cancellationToken);
                 return;
             }
 
@@ -101,6 +104,9 @@ public sealed class CaptchaActionFilter(AppDbContext db, IConfigService configSe
             context.Result = new ObjectResult(attempt) {
                 StatusCode = StatusCodes.Status403Forbidden
             };
+
+            user.FailedAttemptsInWindow++;
+            await _db.SaveChangesAsync(cancellationToken);
             return;
         }
 

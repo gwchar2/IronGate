@@ -79,12 +79,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Actions\Captcha.cs" />
+    <Compile Include="Helpers\Dto\AuthAttemptDto.cs" />
+    <Compile Include="Helpers\Dto\AuthConfigDto.cs" />
     <Compile Include="Helpers\Dto\AuthResultCode.cs" />
     <Compile Include="Attacks\Attack.cs" />
     <Compile Include="Attacks\BruteForce.cs" />
     <Compile Include="Actions\Config.cs" />
     <Compile Include="Attacks\PasswordSpray.cs" />
     <Compile Include="Defaults.cs" />
+    <Compile Include="Helpers\Dto\CaptchaTokenResponse.cs" />
+    <Compile Include="Helpers\Dto\DefenceSnapshotDto.cs" />
+    <Compile Include="Helpers\Dto\UserSeed.cs" />
     <Compile Include="Helpers\Printers.cs" />
     <Compile Include="Actions\Login.cs" />
     <Compile Include="Helpers\HttpUtil.cs" />
@@ -105,10 +110,14 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <None Include="user_seed.json" />
+    <None Include="user_seed.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="rockyou.txt" />
+    <Content Include="rockyou.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

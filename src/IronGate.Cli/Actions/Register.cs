@@ -7,26 +7,23 @@ using System.Threading.Tasks;
 
 namespace IronGate.Cli {
     internal class Register {
-        internal static async Task RegisterAction(HttpClient http, string[] args) {
+        internal static async Task<(bool printHelp, HttpCallResult? http)> RegisterAction(HttpClient http, string[] args) {
 
-            if (args.Length < 3) {
-                Printers.PrintHelp();
-                return;
-            }
+            if (args.Length < 3) 
+                return (true, null);
 
             string username = args[1]?.Trim() ?? string.Empty;
             string password = args[2] ?? string.Empty;
 
-            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password)) {
-                Printers.PrintHelp();
-                return;
-            }
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+                return (true, null);
 
             try {
                 var resp = await RegisterAsync(http, username, password).ConfigureAwait(false);
-                Printers.PrintHttpResult(resp);
+                return (false, resp);
             }catch (Exception ex) {
-                Console.WriteLine($"Error: {ex}");
+                Console.Error.WriteLine($"Error: {ex.Message}");
+                return (true, null);
             }
 
         }

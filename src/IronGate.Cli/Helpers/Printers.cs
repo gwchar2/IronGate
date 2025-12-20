@@ -1,6 +1,7 @@
-﻿using System;
+﻿using IronGate.Cli.Constants;
+using System;
+using System.IO;
 using System.Text.Json;
-using IronGate.Cli.Constants;
 
 namespace IronGate.Cli.Helpers {
     internal class Printers {
@@ -12,7 +13,7 @@ namespace IronGate.Cli.Helpers {
         private static readonly JsonSerializerOptions PrettyJsonOpts =
             new(JsonSerializerDefaults.Web) { WriteIndented = true };
 
-        public static void PrintHelp() {
+        internal static void PrintHelp() {
             Console.WriteLine("IronGate.Cli");
             Console.WriteLine();
             Console.WriteLine("Commands:");
@@ -59,6 +60,10 @@ namespace IronGate.Cli.Helpers {
             }
         }
 
-
+        internal static void WriteJsonl(StreamWriter w, object obj) {
+            var line = JsonSerializer.Serialize(obj, Defaults.JsonOpts);
+            w.WriteLine(line);
+            w.Flush();
+        }
     }
 }

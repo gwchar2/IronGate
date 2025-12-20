@@ -55,12 +55,10 @@ namespace IronGate.Cli.Helpers {
             };
         }
 
-
-
         /*
          * Handles the GET endpoints (config / captcha)
          */
-        public static async Task<HttpCallResult> GetAsync(HttpClient http,string route,string? groupSeed = null,CancellationToken ct = default) {
+        internal static async Task<HttpCallResult> GetAsync(HttpClient http,string route,string? groupSeed = null,CancellationToken ct = default) {
             
             var fullRoute = route;
             if (!string.IsNullOrEmpty(groupSeed)) fullRoute += "?groupSeed=" + Uri.EscapeDataString(groupSeed);
@@ -74,5 +72,18 @@ namespace IronGate.Cli.Helpers {
                 Body = body ?? string.Empty
             };
         }
+
+        /*
+         * Tries to get a certain property from a Json, returns it to a variable named value
+         */
+        internal static bool TryGetProperty(JsonElement root, string name, out JsonElement value) {
+            if (root.ValueKind == JsonValueKind.Object && root.TryGetProperty(name, out value))
+                return true;
+            value = default;
+            return false;
+        }
+
     }
+
+
 }

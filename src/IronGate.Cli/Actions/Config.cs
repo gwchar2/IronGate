@@ -1,5 +1,6 @@
 ﻿using IronGate.Cli.Constants;
 using IronGate.Cli.Helpers;
+using IronGate.Cli.Helpers.Dto;
 using System;
 using System.IO;
 using System.Net.Http;
@@ -10,12 +11,10 @@ using System.Threading.Tasks;
 
 namespace IronGate.Cli {
     internal class Config {
-        internal static async Task ConfigAction(HttpClient http, string[] args) {
+        internal static async Task<(bool printHelp, HttpCallResult? http)> ConfigAction(HttpClient http, string[] args) {
 
-            if (args.Length < 2) {
-                Printers.PrintHelp();
-                return;
-            }
+            if (args.Length < 2)
+                return (true, null);
 
             var cmd = (args[1] ?? string.Empty).Trim().ToLowerInvariant();
 
@@ -23,50 +22,40 @@ namespace IronGate.Cli {
                 switch (cmd) {
                     case "get": {
                             var resp = await GetConfigAsync(http);
-                            Printers.PrintHttpResult(resp);
-                            return;
+                            return (false, resp);
                         }
                     case "set": {
 
-                            if (args.Length < 3) {
-                                Printers.PrintHelp();
-                                return;
-                            }
+                            if (args.Length < 3)
+                                return (true, null);
 
                             var configFile = ( args[2] ?? string.Empty).Trim();
-                            if (string.IsNullOrWhiteSpace(configFile)){
-                                Printers.PrintHelp();
-                                return;
-                            }
+                            if (string.IsNullOrWhiteSpace(configFile))
+                                return (true, null);
 
-                            if (!File.Exists(configFile)) {
-                                Console.WriteLine($"Config file does not exist in the path {configFile}");
-                                return;
-                            }
+                            if (!File.Exists(configFile))
+                                return (true, null);
 
                             using var streamReader = new StreamReader(configFile, Encoding.UTF8);
                             string jsonText = await streamReader.ReadToEndAsync().ConfigureAwait(false);
                             
-                            if (string.IsNullOrWhiteSpace(jsonText)) {
-                                Console.WriteLine("Config file is empty");
-                                return;
-                            }
+                            if (string.IsNullOrWhiteSpace(jsonText))
+                                return (true, null);
 
                             using var doc = JsonDocument.Parse(jsonText);
                             var payload = doc.RootElement.Clone();
 
                             var resp = await SetConfigAsync(http, payload).ConfigureAwait(false);
 
-                            Printers.PrintHttpResult(resp);
-                            return;
+                            return (false, resp);
                         }
                     default:
-                        Printers.PrintHelp();
-                        return;
+                        return (true, null);
                 }
             }
             catch (Exception ex) {
                 Console.Error.WriteLine($"Error: {ex.Message}");
+                return (true, null);
             }
         }
 
@@ -94,5 +83,16 @@ namespace IronGate.Cli {
             return resp;
 
         }
+
+        internal static AuthConfigDto? TryReadConfig(HttpCallResult resp) {
+            if (string.IsNullOrWhiteSpace(resp.Body)) return null;
+            try {
+                return JsonSerializer.Deserialize<AuthConfigDto>(resp.Body, Defaults.JsonOpts);
+            }
+            catch {
+                return null;
+            }
+        }
+
     }
 }

@@ -9,6 +9,7 @@ using System.Net.Http.Headers;
 using IronGate.Cli.Helpers;
 using IronGate.Cli.Attacks;
 using IronGate.Cli.Constants;
+#nullable enable
 
 namespace IronGate.Cli {
     internal static class Program {
@@ -28,29 +29,34 @@ namespace IronGate.Cli {
 
                 using var http = new HttpClient { BaseAddress = new Uri(Defaults.url) };
                 http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
+                
                 var command = args[0].ToLowerInvariant();
 
+                (bool printHelp, HttpCallResult? resp) result = (true, null);
                 switch (command) {
                     case "register":
-                        await Register.RegisterAction(http, args);
+                        result = await Register.RegisterAction(http, args);
                         break;
                     case "config":
-                        await Config.ConfigAction(http, args);
+                        result = await Config.ConfigAction(http, args);
                         break;
                     case "captcha":
-                        await Captcha.CaptchaAction(http, args);
+                        result = await Captcha.CaptchaAction(http, args);
                         break;
                     case "login":
-                        await Login.LoginAction(http, args);
+                        result = await Login.LoginAction(http, args);
                         break;
                     case "attack":
-                        await Attack.AttackAction(http, args);
+                        result = await Attack.AttackAction(http, args);
                         break;
                     default:
                         Unknown(command);
                         break;
                 }
+
+                if (result.printHelp)
+                    Printers.PrintHelp();
+                if (result.resp is not null) Printers.PrintHttpResult(result.resp);
 
                 return 1;
             }

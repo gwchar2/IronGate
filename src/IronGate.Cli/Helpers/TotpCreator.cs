@@ -13,7 +13,7 @@ namespace IronGate.Cli.Helpers {
          */
         internal static string GenerateCode(string base32Secret) {
             if (string.IsNullOrWhiteSpace(base32Secret))
-                throw new ArgumentException("TOTP secret is required.", nameof(base32Secret));
+                throw new ArgumentException($"TOTP secret is required. {nameof(base32Secret)}");
 
             var key = Base32Decode(base32Secret);
 
