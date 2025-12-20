@@ -12,14 +12,14 @@ namespace IronGate.Api.Features.Auth.PasswordHasher;
 public class PasswordHasher(string pepper) : IPasswordHasher {
     private readonly string _pepper = pepper;           // Technically can delete... passed in through DI
     public (string Hash, string Salt) HashPassword(string password, AuthConfigDto config) {
-        switch (config.HashAlgorithm.ToUpperInvariant()) {
-            case "BCRYPT":
+        switch (config.HashAlgorithm.ToLowerInvariant()) {
+            case "bcrypt":
                 return HashHelper.HashBcrypt(password);
 
-            case "ARGON2ID":
+            case "argon2id":
                 return HashHelper.HashArgon2id(password);
 
-            case "SHA256":
+            case "sha256":
                 return HashHelper.HashSha256(password);
 
             default:
@@ -44,9 +44,9 @@ public class PasswordHasher(string pepper) : IPasswordHasher {
         }
 
         return algo switch {
-            "SHA256" => VerifySha256(plainPassword, userHash),
-            "BCRYPT" => VerifyBcrypt(plainPassword, userHash),
-            "ARGON2ID" => VerifyArgon2id(plainPassword, userHash),
+            "sha256" => VerifySha256(plainPassword, userHash),
+            "bcrypt" => VerifyBcrypt(plainPassword, userHash),
+            "argon2id" => VerifyArgon2id(plainPassword, userHash),
             _ => throw new InvalidOperationException(
                     $"Unsupported hash algorithm variant: {userHash.HashAlgorithm}")
         };

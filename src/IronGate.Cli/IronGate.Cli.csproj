@@ -2,12 +2,16 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{4F413FB5-CC81-4056-AEA3-F399F96363C9}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>IronGate.Cli</RootNamespace>
-    <AssemblyName>IronGate.Cli</AssemblyName>
+    <AssemblyName>IronGate</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -74,12 +78,37 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Actions\Captcha.cs" />
+    <Compile Include="Helpers\Dto\AuthResultCode.cs" />
+    <Compile Include="Attacks\Attack.cs" />
+    <Compile Include="Attacks\BruteForce.cs" />
+    <Compile Include="Actions\Config.cs" />
+    <Compile Include="Attacks\PasswordSpray.cs" />
+    <Compile Include="Defaults.cs" />
+    <Compile Include="Helpers\Printers.cs" />
+    <Compile Include="Actions\Login.cs" />
+    <Compile Include="Helpers\HttpUtil.cs" />
+    <Compile Include="Helpers\TotpCreator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Actions\Register.cs" />
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="user_seed.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="rockyou.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

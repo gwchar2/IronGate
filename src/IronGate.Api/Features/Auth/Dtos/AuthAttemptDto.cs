@@ -12,6 +12,7 @@ public sealed class AuthAttemptDto {
     /* Result */
     public bool Success { get; set; }
     public AuthResultCode Result { get; set; }
+    public DateTime? LockOutUntil { get; set; }
 
     /* Password Hashing Details */
     public string HashAlgorithm { get; set; } = null!;      // "SHA256","BCRYPT","ARGON2ID"

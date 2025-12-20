@@ -58,7 +58,7 @@ public sealed class AuthController(IAuthService authService) : ControllerBase {
             return attempt.Result switch {
                 AuthResultCode.Success => Ok(attempt),
                 AuthResultCode.TotpRequired => Unauthorized(attempt),               // 401, client must call /login/totp
-                AuthResultCode.CaptchaRequired => StatusCode(StatusCodes.Status429TooManyRequests, attempt),
+                AuthResultCode.CaptchaRequired => StatusCode(StatusCodes.Status403Forbidden, attempt),
                 AuthResultCode.Fail => Unauthorized(attempt),
                 _ => StatusCode(StatusCodes.Status500InternalServerError, attempt)
             };
@@ -83,6 +83,7 @@ public sealed class AuthController(IAuthService authService) : ControllerBase {
 
             return attempt.Result switch {
                 AuthResultCode.Success => Ok(attempt),
+                AuthResultCode.InvalidTotp => Unauthorized(attempt),
                 AuthResultCode.Fail => Unauthorized(attempt),
                 _ => StatusCode(StatusCodes.Status500InternalServerError, attempt)
             };

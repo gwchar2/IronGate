@@ -1,9 +1,11 @@
 ﻿
 using IronGate.Api.Controllers.Requests;
-using IronGate.Api.Features.Rate_Limiting;
+using IronGate.Api.Features.Auth.Dtos;
 using IronGate.Api.Features.Config.ConfigService;
+using IronGate.Api.Features.Rate_Limiting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using System.Diagnostics;
 
 namespace IronGate.Api.Features.Auth.Filters;
 
@@ -12,7 +14,7 @@ public sealed class RateLimitActionFilter(IRateLimiter rateLimiter, IConfigServi
     private readonly IConfigService _configService = configService;
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context,ActionExecutionDelegate next) {
-
+        Stopwatch stopWatch = Stopwatch.StartNew();
         // Extract the username from the action arguments
         var username = ExtractUsername(context.ActionArguments);
         if (username is null) {
@@ -29,6 +31,9 @@ public sealed class RateLimitActionFilter(IRateLimiter rateLimiter, IConfigServi
             await next();
             return;
         }
+        // Check if the user is not null
+        var cancellationToken = context.HttpContext.RequestAborted;
+      
 
         // Get the client's IP address and construct a unique key of username + IP
         var nowUtc = DateTime.UtcNow;
@@ -46,25 +51,34 @@ public sealed class RateLimitActionFilter(IRateLimiter rateLimiter, IConfigServi
             captchaThreshold,
             nowUtc);
 
+        stopWatch.Stop();
         switch (result.Status) {
             case RateLimitStatus.Ok:
                 await next();
                 return;
 
-            case RateLimitStatus.CaptchaRequired:
-                context.HttpContext.Items["CaptchaRequiredByRateLimit"] = true;
-                await next();
-                return;
-
             case RateLimitStatus.Blocked:
-                var detail = result.RetryAfter.HasValue
-                    ? $"Rate limit exceeded. Try again in {(int)result.RetryAfter.Value.TotalSeconds} seconds."
-                    : "Rate limit exceeded.";
+                var attempt = new AuthAttemptDto {
+                    Username = username,
+                    Operation = "LOGIN",
+                    Timestamp = DateTimeOffset.UtcNow,
+                    LatencyMs = (int)stopWatch.Elapsed.TotalMilliseconds,
+                    Success = false,
+                    Result = AuthResultCode.RateLimited,
 
-                context.Result = new ObjectResult(new {
-                    error = "rate_limited",
-                    detail
-                }) {
+                    HashAlgorithm = config.HashAlgorithm,   
+                    TotpRequired = false,
+                    CaptchaRequired = false,
+
+                    Defences = new DefenceSnapshotDto() {
+                        PepperEnabled = config.PepperEnabled,
+                        CaptchaEnabled = config.CaptchaEnabled,
+                        RateLimitEnabled = config.RateLimitEnabled,
+                        LockoutEnabled = config.LockoutEnabled
+                    }
+                };
+
+                context.Result = new ObjectResult(attempt) {
                     StatusCode = StatusCodes.Status429TooManyRequests
                 };
                 return;

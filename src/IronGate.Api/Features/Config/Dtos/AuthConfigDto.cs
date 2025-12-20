@@ -3,9 +3,6 @@
 namespace IronGate.Api.Features.Config.Dtos;
 
 public sealed class AuthConfigDto {
-    /* Profile Info (Ignored on request) */
-    public Guid Id { get; set; }
-    public string Name { get; set; } = "default_name";                 // "baseline", "full_protection", "attempt_1"
 
     public string HashAlgorithm { get; set; } = null!;        // "sha256_salt", "bcrypt_cost12", "argon2id_m64_t1_p1"
 

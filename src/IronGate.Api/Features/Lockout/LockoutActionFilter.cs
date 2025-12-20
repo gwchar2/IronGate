@@ -1,9 +1,11 @@
 ﻿using IronGate.Api.Controllers.Requests;
+using IronGate.Api.Features.Auth.Dtos;
 using IronGate.Api.Features.Config.ConfigService;
 using IronGate.Core.Database;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace IronGate.Api.Features.Lockout;
 
@@ -12,6 +14,7 @@ public sealed class LockoutActionFilter(AppDbContext db, IConfigService configSe
     private readonly IConfigService _configService = configService;
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context,ActionExecutionDelegate next) {
+       Stopwatch stopWatch = Stopwatch.StartNew();
         // Extract the username from the action arguments
         var username = ExtractUsername(context.ActionArguments);
         if (username is null) {
@@ -34,15 +37,33 @@ public sealed class LockoutActionFilter(AppDbContext db, IConfigService configSe
             return;
         }
 
+        stopWatch.Stop();
         // Check if the user is currently locked out, if the user is not locked out, continue
         // We change the LockoutUntil value only in the AuthService when the lockout conditions are met
         // Therefor we only need to check if the current time is before LockoutUntil
         var nowUtc = DateTime.UtcNow;
         if (user.LockoutUntil.HasValue && user.LockoutUntil.Value > nowUtc) {
-            context.Result = new ObjectResult(new {
-                error = "account_locked",
-                lockedUntil = user.LockoutUntil
-            }) {
+            var attempt = new AuthAttemptDto {
+                Username = username,
+                Operation = "LOGIN",
+                Timestamp = DateTimeOffset.UtcNow,
+                LatencyMs = (int)stopWatch.Elapsed.TotalMilliseconds,
+                Success = false,
+                Result = AuthResultCode.LockedOut,
+                LockOutUntil = user.LockoutUntil,
+                HashAlgorithm = config.HashAlgorithm,
+                TotpRequired = user.TotpEnabled,
+                CaptchaRequired = user.CaptchaRequired,
+
+                Defences = new DefenceSnapshotDto() {
+                    PepperEnabled = config.PepperEnabled,
+                    CaptchaEnabled = config.CaptchaEnabled,
+                    RateLimitEnabled = config.RateLimitEnabled,
+                    LockoutEnabled = config.LockoutEnabled
+                }
+            };
+
+            context.Result = new ObjectResult(attempt) {
                 StatusCode = StatusCodes.Status423Locked
             };
             return;
