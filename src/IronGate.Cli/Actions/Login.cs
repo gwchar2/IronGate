@@ -16,7 +16,14 @@ namespace IronGate.Cli {
     // login <username> <password> <totp> <captcha>
     // login <username> <password> <totp> -
     // login <username> <password> - <captcha>
+    /*
+     * This class handles ALL the different login requests
+     */
     internal static class Login {
+
+        /*
+         * This task handles the parsing of Login action initiated by user, or by an attack
+         */
         internal static async Task<(bool printHelp, HttpCallResult? http)> 
             LoginAction(HttpClient http, string[] args, string groupSeed = "", string totpSec = "", Counter? httpAttempts = null, StreamWriter? log = null) {
 
@@ -34,6 +41,10 @@ namespace IronGate.Cli {
             string? totpSecret = IsDash(totpArg) ? null : totpArg;
             string? captcha = IsDash(captchaArg) ? null : captchaArg;
 
+            // We put the totpSecret from CLI if it isnt null, if it is, than either totpSec or null
+            var secret = !string.IsNullOrWhiteSpace(totpSecret) ?
+                totpSecret : (!string.IsNullOrWhiteSpace(totpSec) ? totpSec : null);
+
             /*
              * Flow of command is:
              * 1. Try to login normally
@@ -44,7 +55,7 @@ namespace IronGate.Cli {
                 CountAndLog(httpAttempts, log, "login", username, password, resp);
                 
                 // Get the auth result for the login action
-                if (!TryGetAuthResult(resp, out var response))
+                if (!HttpUtil.TryGetAuthResult(resp, out var response))
                     return (false, resp);
                 
                 // According to the response we received, we parse. Technically we only need to
@@ -58,7 +69,7 @@ namespace IronGate.Cli {
                             var captchaResp = await Captcha.GetCaptchaTokenAsync(http, groupSeed).ConfigureAwait(false);
                             CountAndLog(httpAttempts, log, "captcha_request", username, password, captchaResp);
 
-                            if (!Captcha.TryGetCaptchaToken(captchaResp, out var token) || string.IsNullOrWhiteSpace(token)) 
+                            if (!HttpUtil.TryGetCaptchaToken(captchaResp, out var token) || string.IsNullOrWhiteSpace(token)) 
                                 return (false, resp);
                             captcha = token;
                         }
@@ -68,14 +79,14 @@ namespace IronGate.Cli {
 
                     var resp2 = await LoginWithCaptchaAsync(http, username, password, captcha!).ConfigureAwait(false);
                     CountAndLog(httpAttempts, log, "login_with_captcha", username, password, resp2);
-
-                    if (!TryGetAuthResult(resp2, out var response2)) 
+                    
+                    if (!HttpUtil.TryGetAuthResult(resp2, out var response2)) 
                         return (false, resp2);
 
                     // If now the captcha also wants a totp (the action filter comes first)
-                    if (response2 == AuthResultCode.TotpRequired && !string.IsNullOrWhiteSpace(totpSecret)) {
+                    if (response2 == AuthResultCode.TotpRequired && !string.IsNullOrWhiteSpace(secret)) {
 
-                        var resp3 = await LoginTotpAsync(http, username, password, TotpCreator.GenerateCode(totpSecret), captcha!).ConfigureAwait(false);
+                        var resp3 = await LoginTotpAsync(http, username, password, TotpCreator.GenerateCode(secret), captcha!).ConfigureAwait(false);
                         CountAndLog(httpAttempts, log, "login_captcha_with_totp", username, password, resp3);
                         
                         return (false, resp3);
@@ -87,25 +98,18 @@ namespace IronGate.Cli {
                 // If we require a TOTP
                 if (response == AuthResultCode.TotpRequired) {
 
-                    // We put the totpSecret from CLI if it isnt null, if it is, than either totpSec or null
-                    var secret = !string.IsNullOrWhiteSpace(totpSecret) ? 
-                        totpSecret : (!string.IsNullOrWhiteSpace(totpSec) ? totpSec : null);
-
                     // If the secret is null -> return false.
                     if (string.IsNullOrWhiteSpace(secret))
                         return (false, resp);
-                    
 
-                    // We just send the request wit ha captcha if its available, since the endpoint will just ignore the captcha if it isnt required
-                    var token = TotpCreator.GenerateCode(secret);
                     //Console.WriteLine($"Token created: {token}");
                     HttpCallResult resp2;
                     if (!string.IsNullOrWhiteSpace(captcha)) {
-                        resp2 = await LoginTotpAsync(http, username, password, token, captcha!).ConfigureAwait(false);
+                        resp2 = await LoginTotpAsync(http, username, password, TotpCreator.GenerateCode(secret), captcha!).ConfigureAwait(false);
                         CountAndLog(httpAttempts, log, "login_with_totp_and_captcha", username, password, resp2);
                     }
                     else {
-                        resp2 = await LoginTotpAsync(http, username, password, token).ConfigureAwait(false);
+                        resp2 = await LoginTotpAsync(http, username, password, TotpCreator.GenerateCode(secret)).ConfigureAwait(false);
                         CountAndLog(httpAttempts, log, "login_totp", username, password, resp2);
                     }
 
@@ -171,66 +175,10 @@ namespace IronGate.Cli {
 
 
         /*
-         * Tries to parse the response into an AuthAttemptDto out variable named attempt
-         */
-        internal static bool TryReadAuthAttempt(HttpCallResult resp, out AuthAttemptDto? attempt) {
-            attempt = null;
-            if (string.IsNullOrWhiteSpace(resp.Body)) return false;
-            try {
-                attempt = JsonSerializer.Deserialize<AuthAttemptDto>(resp.Body, Defaults.JsonOpts);
-                return attempt != null;
-            }
-            catch {
-                return false;
-            }
-        }
-
-        /*
-         * Used to parse AuthAttemptDto result returned from teh endpoint
-         */
-        private static bool TryGetAuthResult(HttpCallResult resp, out AuthResultCode result) {
-            result = default;
-
-            if (string.IsNullOrWhiteSpace(resp.Body))
-                return false;
-
-            try {
-                using var doc = JsonDocument.Parse(resp.Body);
-                var root = doc.RootElement;
-
-                if (!HttpUtil.TryGetProperty(root, "result", out var res))
-                    return false;
-
-                if (res.ValueKind == JsonValueKind.Number) {
-                    if (res.TryGetInt32(out var val)) {
-                        result = (AuthResultCode)val;
-                        return true;
-                    }
-                    return false;
-                }
-
-                if (res.ValueKind == JsonValueKind.String) {
-                    var strRes = res.GetString();
-                    if (string.IsNullOrWhiteSpace(strRes)) return false;
-
-                    if (Enum.TryParse<AuthResultCode>(strRes, ignoreCase: true, out var parsed)) {
-                        result = parsed;
-                        return true;
-                    }
-                    return false;
-                }
-                return false;
-            }
-            catch {
-                return false;
-            }
-        }
-
-        /*
          * When we call the LoginAction from a brute force or from a password spray attack,
          * We still need to log the http attempts in the log file, and to increment the http attempts counter!
          */
-        private static void CountAndLog(Counter? httpAttempts, StreamWriter? log, string phase,string username,string password, HttpCallResult resp) {
+        private static void CountAndLog(Counter? httpAttempts, StreamWriter? log, string phase, string username, string password, HttpCallResult resp) {
 
             if (httpAttempts != null)
                 httpAttempts.Value++;
@@ -240,7 +188,7 @@ namespace IronGate.Cli {
 
             if (phase == "captcha_request"){
                 //We try to parse the Captcha response
-                if (Captcha.TryReadCaptcha(resp, out var cap) && cap != null) {
+                if (HttpUtil.TryReadCaptcha(resp, out var cap) && cap != null) {
                     Printers.WriteJsonl(log, new {
                         attackType = "brute-force",
                         attackTimeUtc = DateTimeOffset.UtcNow,
@@ -256,7 +204,7 @@ namespace IronGate.Cli {
             }
 
             // We try to parse the basic AuthAttemptDto
-            if (TryReadAuthAttempt(resp, out var attempt) && attempt != null) {
+            if (HttpUtil.TryReadAuthAttempt(resp, out var attempt) && attempt != null) {
                 Printers.WriteJsonl(log, new {
                     attackType = "brute-force",
                     attackTimeUtc = DateTimeOffset.UtcNow,

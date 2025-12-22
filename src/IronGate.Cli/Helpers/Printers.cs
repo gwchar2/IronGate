@@ -25,7 +25,7 @@ namespace IronGate.Cli.Helpers {
             Console.WriteLine("  login <username> <password> <totp_secret> -");
             Console.WriteLine("  login <username> <password> - <captcha>");
             Console.WriteLine("  attack brute-force <username> ");
-            Console.WriteLine("  attack spray <usernamesFile> ");
+            Console.WriteLine("  attack spray <usernamesFile> <passwordFile> <thread_amount>");
             Console.WriteLine("Note: All attacks are executed until either the limit or a success is reached.");
             Console.WriteLine();
             Console.WriteLine("Defaults:");

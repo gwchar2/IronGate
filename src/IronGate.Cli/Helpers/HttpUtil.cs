@@ -1,4 +1,6 @@
-﻿using System;
+﻿using IronGate.Cli.Constants;
+using IronGate.Cli.Helpers.Dto;
+using System;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -8,26 +10,8 @@ using System.Threading.Tasks;
 
 
 namespace IronGate.Cli.Helpers {
-
     /*
-     * This is a http result class which we use to parse the results retrieved
-     */
-    internal sealed class HttpCallResult {
-        public int StatusCode { get; set; }
-        public string ReasonPhrase { get; set; } = string.Empty;
-        public string Body { get; set; } = string.Empty;
-
-        public bool IsSuccess => StatusCode >= 200 && StatusCode <= 299;
-
-        public T? TryReadJson<T>(JsonSerializerOptions opts) {
-            if (string.IsNullOrWhiteSpace(Body)) return default;
-            try { return JsonSerializer.Deserialize<T>(Body, opts); }
-            catch { return default; }
-        }
-    }
-
-    /*
-     * Handles the POST/PUT endpoints
+     * Handles the GET / POST endpoints, and the parsing of certain DTO's
      */
     internal static class HttpUtil {
         public static async Task<HttpCallResult> SendJsonAsync(HttpClient http, HttpMethod method, string route, object payload, JsonSerializerOptions jsonOpts) {
@@ -82,6 +66,106 @@ namespace IronGate.Cli.Helpers {
             value = default;
             return false;
         }
+
+        /*
+         * Tries to parse the response into an AuthAttemptDto out variable named attempt
+         */
+        internal static bool TryReadAuthAttempt(HttpCallResult resp, out AuthAttemptDto? attempt) {
+            attempt = null;
+            if (string.IsNullOrWhiteSpace(resp.Body)) return false;
+            try {
+                attempt = JsonSerializer.Deserialize<AuthAttemptDto>(resp.Body, Defaults.JsonOpts);
+                return attempt != null;
+            }
+            catch {
+                return false;
+            }
+        }
+
+        /*
+         * Used to parse AuthAttemptDto result returned from teh endpoint
+         */
+        internal static bool TryGetAuthResult(HttpCallResult resp, out AuthResultCode result) {
+            result = default;
+
+            if (string.IsNullOrWhiteSpace(resp.Body))
+                return false;
+
+            try {
+                using var doc = JsonDocument.Parse(resp.Body);
+                var root = doc.RootElement;
+
+                if (!HttpUtil.TryGetProperty(root, "result", out var res))
+                    return false;
+
+                if (res.ValueKind == JsonValueKind.Number) {
+                    if (res.TryGetInt32(out var val)) {
+                        result = (AuthResultCode)val;
+                        return true;
+                    }
+                    return false;
+                }
+
+                if (res.ValueKind == JsonValueKind.String) {
+                    var strRes = res.GetString();
+                    if (string.IsNullOrWhiteSpace(strRes)) return false;
+
+                    if (Enum.TryParse<AuthResultCode>(strRes, ignoreCase: true, out var parsed)) {
+                        result = parsed;
+                        return true;
+                    }
+                    return false;
+                }
+                return false;
+            }
+            catch {
+                return false;
+            }
+        }
+
+        internal static bool TryReadCaptcha(HttpCallResult resp, out CaptchaTokenResponse? attempt) {
+            attempt = null;
+            if (string.IsNullOrWhiteSpace(resp.Body)) return false;
+            try {
+                attempt = JsonSerializer.Deserialize<CaptchaTokenResponse>(resp.Body, Defaults.JsonOpts);
+                return attempt != null;
+            }
+            catch {
+                return false;
+            }
+        }
+        /*
+         * Used to parse the Captcha result returned from the endpoint
+         */
+        internal static bool TryGetCaptchaToken(HttpCallResult resp, out string? token) {
+            token = null;
+
+            if (string.IsNullOrWhiteSpace(resp.Body))
+                return false;
+
+            try {
+                using var doc = JsonDocument.Parse(resp.Body);
+                var root = doc.RootElement;
+
+                if (root.ValueKind == JsonValueKind.Object) {
+                    if (root.TryGetProperty("captchaToken", out var p) && p.ValueKind == JsonValueKind.String) {
+                        token = p.GetString();
+                        return !string.IsNullOrWhiteSpace(token);
+                    }
+                }
+
+                if (root.ValueKind == JsonValueKind.String) {
+                    token = root.GetString();
+                    return !string.IsNullOrWhiteSpace(token);
+                }
+
+                return false;
+            }
+            catch {
+                return false;
+            }
+        }
+
 
     }
 

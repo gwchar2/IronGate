@@ -2,15 +2,16 @@
 using IronGate.Cli.Helpers;
 using IronGate.Cli.Helpers.Dto;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+#nullable enable
 
 namespace IronGate.Cli {
+    /*
+     * This class handles all the captcha endpoints & parsing
+     */
     internal class Captcha {
         internal static async Task<(bool printHelp, HttpCallResult? http)> CaptchaAction(HttpClient http, string[] args) {
 
@@ -48,47 +49,6 @@ namespace IronGate.Cli {
 
             return resp;
         }
-        internal static bool TryReadCaptcha(HttpCallResult resp, out CaptchaTokenResponse? attempt) {
-            attempt = null;
-            if (string.IsNullOrWhiteSpace(resp.Body)) return false;
-            try {
-                attempt = JsonSerializer.Deserialize<CaptchaTokenResponse>(resp.Body, Defaults.JsonOpts);
-                return attempt != null;
-            }
-            catch {
-                return false;
-            }
-        }
-        /*
-         * Used to parse the Captcha result returned from the endpoint
-         */
-        internal static bool TryGetCaptchaToken(HttpCallResult resp, out string? token) {
-            token = null;
-
-            if (string.IsNullOrWhiteSpace(resp.Body))
-                return false;
-
-            try {
-                using var doc = JsonDocument.Parse(resp.Body);
-                var root = doc.RootElement;
-
-                if (root.ValueKind == JsonValueKind.Object) {
-                    if (root.TryGetProperty("captchaToken", out var p) && p.ValueKind == JsonValueKind.String) {
-                        token = p.GetString();
-                        return !string.IsNullOrWhiteSpace(token);
-                    }
-                }
-
-                if (root.ValueKind == JsonValueKind.String) {
-                    token = root.GetString();
-                    return !string.IsNullOrWhiteSpace(token);
-                }
-
-                return false;
-            }
-            catch {
-                return false;
-            }
-        }
+        
     }
 }

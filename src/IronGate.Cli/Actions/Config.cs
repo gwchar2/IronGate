@@ -10,6 +10,9 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace IronGate.Cli {
+    /*
+     * This class handles all the config requests
+     */
     internal class Config {
         internal static async Task<(bool printHelp, HttpCallResult? http)> ConfigAction(HttpClient http, string[] args) {
 
