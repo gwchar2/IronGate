@@ -4,9 +4,16 @@ using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+#nullable enable
 
 namespace IronGate.Cli {
+    /*
+     * This is the Register Action class, it handles the register request
+     */
     internal class Register {
+        /*
+         * Register Action handles the remainder of parsing required after register action initiated
+         */
         internal static async Task<(bool printHelp, HttpCallResult? http)> RegisterAction(HttpClient http, string[] args) {
 
             if (args.Length < 3) 
@@ -29,6 +36,9 @@ namespace IronGate.Cli {
         }
 
 
+        /*
+         * RegisterAsync handles the registration request
+         */
         internal static async Task<HttpCallResult> RegisterAsync(HttpClient http, string username, string password, CancellationToken ct = default) {
 
             ct.ThrowIfCancellationRequested();

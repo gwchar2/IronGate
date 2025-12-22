@@ -1,9 +1,5 @@
 ﻿using System;
-using System.IO;
-using System.Text;
 using System.Net.Http;
-using System.Text.Json;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Net.Http.Headers;
 using IronGate.Cli.Helpers;
@@ -13,6 +9,17 @@ using IronGate.Cli.Constants;
 
 namespace IronGate.Cli {
     internal static class Program {
+        /*
+         * TODO: 
+         *  1.(DONE) Go through the Todos's  
+         *  2. Fix the prerequesits properly.
+         *      Migrations
+         *      Specific files (Brute force: user_seed.json , rockyou | Spray: user_seed.json, usernameFile, passwordFile)
+         *  3. Decide on exact combination of tests, understand what am I really required to test? What do I look for ?
+         *  4. Test
+         *  5. Summarize
+         *  6. Proper README
+         */
 
         /*
          * IronGate.Cli Main Entry Point

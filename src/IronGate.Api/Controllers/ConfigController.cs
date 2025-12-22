@@ -32,7 +32,6 @@ public sealed class ConfigController(IConfigService configService) : ControllerB
             return Ok(updated);
         }
         catch (InvalidOperationException ex) {
-            // Bad config values
             return BadRequest(new {
                 error = "Invalid configuration.",
                 detail = ex.Message

@@ -2,26 +2,18 @@
 using IronGate.Cli.Helpers;
 using IronGate.Cli.Helpers.Dto;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
-using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
+#nullable enable
 
 namespace IronGate.Cli {
 
     internal class BruteForce { 
 
-        /*
-         * Since we cant pass references in async classes, this class is just a small counter for the amount of http requests sent in the LoginAction class
-         */
-        internal sealed class Counter {
-            internal int Value { get; set; }
-            internal Counter(int initial = 0) => Value = initial;
-        }
 
         public static async Task RunAsync(HttpClient http, AuthConfigDto config,UserSeed seed,string username) {
 
@@ -40,7 +32,7 @@ namespace IronGate.Cli {
             var waitTime = config.RateLimitEnabled ? config.RateLimitWindowSeconds : null;
             var maxHttpAttempts = Defaults.DefaultLimit;
             var maxRunTime = TimeSpan.FromSeconds(Defaults.TimeLimitSeconds);
-
+            var rateLimit = false;
             // We try to get the totpsecret + group seed if it exists for this user
             seed.TotpSecrets.TryGetValue(username, out var totpSec);
             totpSec ??= string.Empty;
@@ -60,9 +52,18 @@ namespace IronGate.Cli {
             var started = Stopwatch.StartNew();
             var httpAttempts = new Counter();
 
+            // configure ctrl+c to stop
+            using var cancelSource = new CancellationTokenSource();
+            void handler(object s, ConsoleCancelEventArgs e) {
+                e.Cancel = true;
+                cancelSource.Cancel();
+            }
+            Console.CancelKeyPress += handler;
+
+
             using var streamReader = new StreamReader(passwordList, Encoding.UTF8);
 
-            while (!streamReader.EndOfStream) {
+            while (!streamReader.EndOfStream && !cancelSource.IsCancellationRequested) {
 
                 if (started.Elapsed > maxRunTime) {
                     Console.WriteLine("Stopped: Runtime limit reached.");
@@ -74,9 +75,12 @@ namespace IronGate.Cli {
                     return;
                 }
 
-                // We get a password candidate from the file
-                var candidate = await streamReader.ReadLineAsync().ConfigureAwait(false);
-                if (candidate == null) break;
+                // We get a password candidate from the file, only if we did not hit a rate limit. If we did, we try again with some one!
+                string candidate = "";
+                if (!rateLimit){
+                    candidate = await streamReader.ReadLineAsync().ConfigureAwait(false);
+                    if (candidate == null) break;
+                }
 
                 candidate = candidate.Trim();
                 if (candidate.Length == 0) continue;
@@ -90,9 +94,9 @@ namespace IronGate.Cli {
                 // Variables that will hold the result status
                 AuthResultCode? resultCode = null;
                 bool success = false;
-                if (resp != null && Login.TryReadAuthAttempt(resp, out var attempt)) {
+                if (resp != null && HttpUtil.TryReadAuthAttempt(resp, out var attempt)) {
 
-                    resultCode = attempt.Result;
+                    resultCode = attempt!.Result;
                     success = attempt.Success;
                 }
 
@@ -100,7 +104,8 @@ namespace IronGate.Cli {
                 if (resultCode == AuthResultCode.RateLimited) {
                     if (waitTime.HasValue && waitTime.Value > 0) {
                         Console.WriteLine($"Rate limit hit! Waiting for {waitTime.Value} seconds");
-                        await Task.Delay(TimeSpan.FromSeconds(waitTime.Value)).ConfigureAwait(false);
+                        await Task.Delay(TimeSpan.FromSeconds(waitTime.Value), cancelSource.Token).ConfigureAwait(false);
+                        rateLimit = true;
                     }
                     
                     continue;
@@ -120,6 +125,8 @@ namespace IronGate.Cli {
             Console.WriteLine("We hit our default cap or finished our file!!");
 
         }
+
+
 
 
     }

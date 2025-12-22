@@ -5,18 +5,9 @@ using IronGate.Api.Features.Auth.Filters;
 using IronGate.Api.Features.Captcha;
 using IronGate.Api.Features.Lockout;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Data.Common;
 
 namespace IronGate.Api.Controllers;
 
-
-/*
- * TODO: 
- * we move captcha token to regular login request
- * we add a filter for captcha token, based on the lockout amount from the database.
- * if a captcah token is required -> we parse it from the request, if it isnt -> we continue, if it is required and doesnt exist -> return unauthorized
- */
 
 [ApiController]
 [Route("api/[controller]")]

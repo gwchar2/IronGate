@@ -1,21 +1,17 @@
 ﻿using IronGate.Cli.Constants;
 using IronGate.Cli.Helpers;
-using IronGate.Cli.Helpers.Dto;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 #nullable enable
 
 namespace IronGate.Cli.Attacks {
     
     // attack brute-force <username> 
-    //  attack spray <usernamesFile> 
+    //  attack spray <usernamesFile> <passwordFile> <thread_amount>
     internal class Attack {
 
         internal static async Task<(bool printHelp, HttpCallResult? http)> AttackAction(HttpClient http, string[] args) {
@@ -55,7 +51,16 @@ namespace IronGate.Cli.Attacks {
                                 return (true, null);
                             }
 
-                            //await RunSprayAsync(http, config, seed, usernamesFile, Defaults.RockYou, maxHttpAttempts, maxRunTime).ConfigureAwait(false);
+                            var passwordFile = (args[3] ?? string.Empty).Trim();
+                            if (string.IsNullOrWhiteSpace(passwordFile) || !File.Exists(passwordFile)) {
+                                Console.WriteLine($"Password file not found: {passwordFile}");
+                                return (true, null);
+                            }
+                            
+                            
+                            int threads = 4;
+                            if (args.Length >= 5 && int.TryParse(args[4], out var t)) threads = t;
+                            await PasswordSpray.RunAsync(http, config, seed, usernamesFile, passwordFile,threads).ConfigureAwait(false);
                             return (false, null);
                         }
 
