@@ -89,10 +89,10 @@
     <Compile Include="Defaults.cs" />
     <Compile Include="Helpers\Dto\CaptchaTokenResponse.cs" />
     <Compile Include="Helpers\Dto\DefenceSnapshotDto.cs" />
-    <Compile Include="Helpers\Dto\UserSeed.cs" />
     <Compile Include="Helpers\Printers.cs" />
     <Compile Include="Actions\Login.cs" />
     <Compile Include="Helpers\HttpUtil.cs" />
+    <Compile Include="Helpers\Structs.cs" />
     <Compile Include="Helpers\TotpCreator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
