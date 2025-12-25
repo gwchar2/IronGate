@@ -1,142 +1,142 @@
 {
-  "seed_group": 209706795,
+  "seed_group": 3971157,
   "users": [
     {
-      "username": "weak_alice",
-      "password": "123456",
+      "username": "weak_01",
+      "password": "3971157",
       "category": "weak",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "weak_bob",
+      "username": "weak_02",
       "password": "password",
       "category": "weak",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "weak_charlie",
+      "username": "weak_03",
       "password": "qwerty",
       "category": "weak",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "weak_dana",
+      "username": "weak_04",
       "password": "111111",
       "category": "weak",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "weak_eran",
+      "username": "weak_05",
       "password": "abc123",
       "category": "weak",
-      "totp_enabled": false,
-      "secret_totp": null
+      "totp_enabled": true,
+      "secret_totp": "Y7TJTUMCYCSE4STY"
     },
     {
-      "username": "weak_fiona",
+      "username": "weak_06",
       "password": "letmein",
       "category": "weak",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "weak_gil",
+      "username": "weak_07",
       "password": "000000",
       "category": "weak",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "weak_hadas",
+      "username": "weak_08",
       "password": "sunshine",
       "category": "weak",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "weak_igor",
+      "username": "weak_09",
       "password": "iloveyou",
       "category": "weak",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "weak_seed",
-      "password": "209706795",
+      "username": "weak_10",
+      "password": "taylor1",
       "category": "weak",
       "totp_enabled": false,
       "secret_totp": null
     },
 
     {
-      "username": "medium_alice",
+      "username": "medium-01",
       "password": "Skyline2024",
       "category": "medium",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "medium_bob",
+      "username": "medium-02",
       "password": "BlueRiver19",
       "category": "medium",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "medium_charlie",
+      "username": "medium-03",
       "password": "Mountain88",
       "category": "medium",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "medium_dana",
+      "username": "medium-04",
       "password": "Coffee92",
       "category": "medium",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "medium_eran",
+      "username": "medium-05",
       "password": "Window73",
       "category": "medium",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "medium_fiona",
+      "username": "medium-06",
       "password": "Summer21",
       "category": "medium",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "medium_gil",
+      "username": "medium-07",
       "password": "Laptop307",
       "category": "medium",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "medium_hadas",
+      "username": "medium-08",
       "password": "Silver39",
       "category": "medium",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "medium_igor",
+      "username": "medium-09",
       "password": "Garden55",
       "category": "medium",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "medium_totp",
+      "username": "medium-10",
       "password": "YellowTree41",
       "category": "medium",
       "totp_enabled": true,
@@ -144,70 +144,70 @@
     },
 
     {
-      "username": "strong_alice",
+      "username": "strong-01",
       "password": "Gr33n!Forest_92",
       "category": "strong",
       "totp_enabled": true,
       "secret_totp": "NB2W4Y3DPEHPK3PX"
     },
     {
-      "username": "strong_bob",
+      "username": "strong-02",
       "password": "Blu3Ocean#714",
       "category": "strong",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "strong_charlie",
+      "username": "strong-03",
       "password": "Red!Galaxy7_21",
       "category": "strong",
       "totp_enabled": true,
       "secret_totp": "KRSXG5DSNFXGOIDP"
     },
     {
-      "username": "strong_dana",
+      "username": "strong-04",
       "password": "NightSky*48!road",
       "category": "strong",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "strong_eran",
+      "username": "strong-05",
       "password": "Ston3Wall@990",
       "category": "strong",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "strong_fiona",
+      "username": "strong-06",
       "password": "Aur0ra$Light_77",
       "category": "strong",
       "totp_enabled": true,
       "secret_totp": "MFRGGZDFMZTWQ2LK"
     },
     {
-      "username": "strong_gil",
+      "username": "strong-07",
       "password": "P@ssw0rd?NoThanks9",
       "category": "strong",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "strong_hadas",
+      "username": "strong-08",
       "password": "Wh!teHorse_64",
       "category": "strong",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "strong_igor",
+      "username": "strong-09",
       "password": "C0pper&River_38",
       "category": "strong",
       "totp_enabled": true,
       "secret_totp": "ONSWG4TFORXW4Y3D"
     },
     {
-      "username": "strong_judy",
+      "username": "strong-10",
       "password": "Midn1ght#Train_5",
       "category": "strong",
       "totp_enabled": false,

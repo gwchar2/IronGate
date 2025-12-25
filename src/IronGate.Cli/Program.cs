@@ -19,6 +19,7 @@ namespace IronGate.Cli {
          *  4. Test
          *  5. Summarize
          *  6. Proper README
+         *  https://weakpass.com/wordlists/rockyou.txt#wordlist
          */
 
         /*

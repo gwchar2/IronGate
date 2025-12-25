@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IronGate.Core.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251219160711_InitialCreate")]
+    [Migration("20251225184222_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

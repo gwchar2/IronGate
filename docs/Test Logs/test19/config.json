@@ -1,0 +1,12 @@
+{
+  "hashAlgorithm": "sha256",
+  "pepperEnabled": true,
+  "rateLimitEnabled": true,
+  "rateLimitWindowSeconds": 60,
+  "maxAttemptsPerUser": 5,
+  "lockoutEnabled": true,
+  "lockoutThreshold": 10,
+  "lockoutDurationSeconds": 50000,
+  "captchaEnabled": true,
+  "captchaAfterFailedAttempts": 3
+}

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Security.Cryptography;
 using System.Text;
+#nullable enable
 
 namespace IronGate.Cli.Helpers {
     internal static class TotpCreator {
@@ -11,11 +12,11 @@ namespace IronGate.Cli.Helpers {
         /*
          * Generates a valid TOTP from the received secret 
          */
-        internal static string GenerateCode(string base32Secret) {
+        internal static string GenerateCode(string? base32Secret = null) {
             if (string.IsNullOrWhiteSpace(base32Secret))
                 throw new ArgumentException($"TOTP secret is required. {nameof(base32Secret)}");
 
-            var key = Base32Decode(base32Secret);
+            var key = Base32Decode(base32Secret!);
 
             var unixTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             var timeStep = (ulong)(unixTime / TimeStepSeconds);

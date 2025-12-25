@@ -65,5 +65,42 @@ namespace IronGate.Cli.Helpers {
             w.WriteLine(line);
             w.Flush();
         }
+
+        /*
+       * When we call the LoginAction from a brute force or from a password spray attack,
+       * We still need to log the http attempts in the log file, and to increment the http attempts counter!
+       */
+        internal static void Log(int httpAttempts, StreamWriter log, string username, string password, HttpCallResult resp,string attack_type) {
+
+            httpAttempts++;
+
+            if (log is null)
+                return;
+
+            // We try to parse the basic AuthAttemptDto
+            if (HttpUtil.TryReadAuthAttempt(resp, out var attempt) && attempt != null) {
+                Printers.WriteJsonl(log, new {
+                    attackType = attack_type,
+                    attackTimeUtc = DateTimeOffset.UtcNow,
+                    attemptNumber = httpAttempts,
+                    username,
+                    password,
+                    httpStatus = resp.StatusCode,
+                    attempt
+                });
+                return;
+            }
+
+            // If nothing worked we fall to default
+            Printers.WriteJsonl(log, new {
+                attackType = "brute-force",
+                attackTimeUtc = DateTimeOffset.UtcNow,
+                attemptNumber = httpAttempts,
+                username,
+                password,
+                httpStatus = resp.StatusCode,
+                rawBody = resp.Body
+            });
+        }
     }
 }
