@@ -62,7 +62,7 @@ If, for some reason, it is - run the following command:
 5. Choose your new profile (or docker-compose) and run.
 <img src="./assets/choose-profile.jpg" alt="dockercompose" />
 
-6. Navigate in your terminal to `/src/IronGate.Cli/bin/Debug` (or /Release deppending on what build you chose)
+6. Navigate in your terminal to `/src/IronGate.Cli/bin/Debug` (or `/Release` deppending on what build you chose)
 <img src="./assets/terminal.jpg" alt="dockercompose" />
 
 7. You can now access the CLI and use the attacks. Run it once via `.\Irongate.exe` in order to get the help menu printed.
