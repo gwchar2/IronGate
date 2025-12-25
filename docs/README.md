@@ -9,6 +9,7 @@ IronGate is a security-focused learning and experimentation project that demonst
 
 This repository is intended for education, testing, and research in a controlled environment only.
 To see our thought process, check out:
+
 ``https://docs.google.com/document/d/1y9GAkvzMeREG348OgO-jRU4kgLXtTK8E_ooSjLuyAz0/edit?tab=t.0``
 
 ---
@@ -17,14 +18,10 @@ To see our thought process, check out:
 
 Typical layout (names may differ slightly per solution):
 
-- `src/IronGate.Api/`  
-  Web API server (endpoints for register/login/config/captcha, etc.)
-- `src/IronGate.Core/` 
-  Database / persistence layer (EF Core, migrations, DB context, repositories)
-- `src/IronGate.Cli/`  
-  Command line tool for interacting with API + running attacks
-- `docs/`  
-  Includes all the documents required in the assignment (Logs, video, ppt)
+- `src/IronGate.Api/` - Web API server (endpoints for register/login/config/captcha, etc.)
+- `src/IronGate.Core/` - Database / persistence layer (EF Core, migrations, DB context, repositories)
+- `src/IronGate.Cli/` - Command line tool for interacting with API + running attacks
+- `docs/` - Includes all the documents required in the assignment (Logs, video, ppt)
 
 ---
 
