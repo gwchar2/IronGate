@@ -11,14 +11,15 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using static IronGate.Cli.BruteForce;
 #nullable enable
 
 namespace IronGate.Cli.Attacks {
     internal class PasswordSpray {
 
-        // A global counter for all threads. We will have to make critical section for this. Each thread uses the Counter class we made in bruteforce....
-        private static int globalHttpAttempts; 
+        // A global counter for all threads. We will have to make critical section for this.
+        private static int globalHttpAttempts;
+        private static long totalRequestMs;
+        private static double averageMsPerRequest;
 
         internal static async Task RunAsync (HttpClient http,AuthConfigDto config,UserSeed seed,string usernamesFile,string passwordList, int threads) {
 
@@ -66,8 +67,8 @@ namespace IronGate.Cli.Attacks {
             Console.WriteLine($"Log:  {logPath}");
 
 
-            globalHttpAttempts = 0;
             var started = Stopwatch.StartNew();
+            globalHttpAttempts = 0;
 
             var terminalUsers = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
 
@@ -84,7 +85,7 @@ namespace IronGate.Cli.Attacks {
 
                 // The main logic continues until no passwords left, or we hit the limit
                 while (!pwReader.EndOfStream && !cancelSource.IsCancellationRequested) {
-
+                    
                     if (started.Elapsed > maxRunTime) {
                         Console.WriteLine("Stopped: Runtime limit reached.");
                         return;
@@ -118,13 +119,11 @@ namespace IronGate.Cli.Attacks {
                     var tasks = new List<Task>(threads);
                     for (var i = 0; i < threads; i++) {
 
-                        // IMPORTANT:
-                        // - Do NOT pass cancelSource.Token to Task.Run (it will surface TaskCanceledException at the task level)
-                        // - Use the token only inside awaits (Delay / your own checks)
                         tasks.Add(Task.Run(async () => {
                             try {
-                                // each worker gets its own counter initiated at 0
-                                var localCounter = new Counter(0);
+                                // We increment the attempts for each thread attempt
+                                Interlocked.Increment(ref globalHttpAttempts);
+                                var currentMsTime = Stopwatch.StartNew();
 
                                 while (!cancelSource.IsCancellationRequested) {
 
@@ -161,23 +160,16 @@ namespace IronGate.Cli.Attacks {
 
                                         // The login action itself
                                         var args = new[] { "login", username, password, "-", "-" };
-                                        var before = localCounter.Value;
 
-                                        var (_, resp) = await Login.LoginAction(
-                                            http,
-                                            args,
-                                            (groupSeed ?? string.Empty),
-                                            totpSec,
-                                            localCounter
-                                        ).ConfigureAwait(false);
+                                        var (_, resp) = await Login.LoginAction(http,args,(groupSeed ?? string.Empty),totpSec).ConfigureAwait(false);
+                                        
+                                        // Calculate for average time
+                                        currentMsTime.Stop();
+                                        long ms = currentMsTime.ElapsedMilliseconds;
+                                        Interlocked.Add(ref totalRequestMs, ms);
+                                        long n = Interlocked.Increment(ref globalHttpAttempts);
 
-                                        // Calculate how many http requests occurred within LoginAction
-                                        var after = localCounter.Value;
-                                        var delta = after - before;
-                                        if (delta <= 0) delta = 1;
-
-                                        Interlocked.Add(ref globalHttpAttempts, delta);
-
+                                        if (resp != null) Printers.Log(Volatile.Read(ref globalHttpAttempts), log, username, password, resp, "spray");
                                         // Parse final response (success/fail/rate limit/locked out)
                                         AuthAttemptDto? attempt = null;
                                         AuthResultCode? code = null;
@@ -190,26 +182,9 @@ namespace IronGate.Cli.Attacks {
                                         if (authAttempt)
                                             code = attempt!.Result;
 
-                                        // Log the final response
-                                        lock (logLock) {
-                                            Printers.WriteJsonl(log, new {
-                                                attackType = "spray",
-                                                attackTimeUtc = DateTimeOffset.UtcNow,
-                                                username,
-                                                password,
-                                                globalHttpAttempts = Volatile.Read(ref globalHttpAttempts),
-                                                httpStatus = resp?.StatusCode,
-                                                parsed = authAttempt,
-                                                attempt,
-                                                rawBody = authAttempt ? null : resp?.Body
-                                            });
-                                        }
-
-                                        // Stop on success
+                                        // We continue on success, but we add the username/pass combination to the found list
                                         if (authAttempt && attempt!.Success) {
                                             found.Add((username, password));
-                                            cancelSource.Cancel();
-                                            break;
                                         }
 
                                         // Stop this username if locked out
@@ -250,7 +225,6 @@ namespace IronGate.Cli.Attacks {
                             }
                         }, CancellationToken.None));
                     }
-
                     try {
                         await Task.WhenAll(tasks).ConfigureAwait(false);
                     }
@@ -261,6 +235,7 @@ namespace IronGate.Cli.Attacks {
                         // normal stop
                     }
 
+                    // Print the found array
                     if (!found.IsEmpty) {
                         foreach (var (u, p) in found)
                             Console.WriteLine($"Success: {u} / {p}");
@@ -278,6 +253,11 @@ namespace IronGate.Cli.Attacks {
                     Console.WriteLine("Finished: Wordlist ended or all users became terminal.");
             }
             finally {
+                averageMsPerRequest = (double)totalRequestMs / globalHttpAttempts;
+
+                Printers.WriteJsonl(log, new {
+                    totalAverageMs = averageMsPerRequest
+                });
                 Console.CancelKeyPress -= handler;
             }
         }
