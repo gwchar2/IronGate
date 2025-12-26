@@ -14,9 +14,10 @@ namespace IronGate.Cli.Constants {
         internal const string CaptchaRoute = "/api/admin/get_captcha_token";
         internal const string QueryKey = "groupSeed";
         internal const string UserSeed = "user_seed.json";
-        internal const string RockYou = "rockyou2.txt";
+        internal const string RockYou = "rockyou.txt";
         internal const int DefaultLimit = 50000;
         internal const int HardLimit = 1000000;
         internal const int TimeLimitSeconds = 7200;
+        internal const int DefaultThreadAmount = 10;
     }
 }

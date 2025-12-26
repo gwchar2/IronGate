@@ -148,7 +148,7 @@ attack spray <usernamesFile> <passwordFile> <thread_amount>
 ```
 
 `Note:` Login commands must receive 4 variables. If you do not have an input, use `-` as a filler.
-`Note:` Password-Spray runs with a default of 4 threads, and at a maximum of 32 threads.
+`Note:` Password-Spray runs with a default of 4 threads, and at a maximum of 20 threads.
 
 
 ### Ethical Statement

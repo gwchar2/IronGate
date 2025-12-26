@@ -51,16 +51,10 @@ namespace IronGate.Cli.Attacks {
                                 return (true, null);
                             }
 
-                            var passwordFile = (args[3] ?? string.Empty).Trim();
-                            if (string.IsNullOrWhiteSpace(passwordFile) || !File.Exists(passwordFile)) {
-                                Console.WriteLine($"Password file not found: {passwordFile}");
-                                return (true, null);
-                            }
-                            
-                            
-                            int threads = 4;
-                            if (args.Length >= 5 && int.TryParse(args[4], out var t)) threads = t;
-                            await PasswordSpray.RunAsync(http, config, seed, usernamesFile, passwordFile,threads).ConfigureAwait(false);
+
+                            int threads = Defaults.DefaultThreadAmount;
+                            if (args.Length >= 4 && int.TryParse(args[3], out var t)) threads = t;
+                            await PasswordSpray.RunAsync(http, config, seed, usernamesFile,threads).ConfigureAwait(false);
                             return (false, null);
                         }
 
@@ -76,10 +70,11 @@ namespace IronGate.Cli.Attacks {
         private static UserSeed LoadUserSeed(string path) {
             var seed = new UserSeed();
 
-            var full = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path);
+            var full = Path.Combine(Directory.GetCurrentDirectory(), path);
             if (!File.Exists(full))
                 return seed;
 
+            Console.WriteLine($"Path of usernames: {full}");
             try {
                 var json = File.ReadAllText(full, Encoding.UTF8);
                 if (string.IsNullOrWhiteSpace(json))

@@ -1,5 +1,5 @@
 {
-  "seed_group": 3971157,
+  "seed_group": "3971157",
   "users": [
     {
       "username": "weak_01",
@@ -66,7 +66,7 @@
     },
     {
       "username": "weak_10",
-      "password": "taylor1",
+      "password": "taylor",
       "category": "weak",
       "totp_enabled": false,
       "secret_totp": null

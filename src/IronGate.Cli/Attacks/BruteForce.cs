@@ -21,7 +21,7 @@ namespace IronGate.Cli {
         public static async Task RunAsync(HttpClient http, AuthConfigDto config, UserSeed seed, string username) {
 
             // Folder base directory, and find the rockyou file
-            var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            var baseDir = Directory.GetCurrentDirectory();
             var passwordList = Path.IsPathRooted(Defaults.RockYou)
                 ? Defaults.RockYou
                 : Path.Combine(baseDir, Defaults.RockYou);
@@ -30,7 +30,7 @@ namespace IronGate.Cli {
                 Console.WriteLine($"Wordlist not found: {passwordList}");
                 return;
             }
-
+            Console.WriteLine($"Path of passwords: {passwordList}");
             // Wiat time for rate limit, with max http attempts & runtime as configured in defaults
             var waitTime = config.RateLimitEnabled ? config.RateLimitWindowSeconds : null;
             var maxHttpAttempts = Defaults.DefaultLimit;
