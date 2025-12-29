@@ -1,0 +1,11 @@
+{"timestampUtc":"2025-12-29T17:29:38.0584218+00:00","cpuPercent":22.183272625160964,"workingSetBytes":351793152,"privateMemoryBytes":383954944,"managedHeapBytes":98735544,"threads":24}
+{"timestampUtc":"2025-12-29T17:29:38.5586438+00:00","cpuPercent":7.090990779242087,"workingSetBytes":352776192,"privateMemoryBytes":384274432,"managedHeapBytes":98842208,"threads":24}
+{"timestampUtc":"2025-12-29T17:29:39.0588409+00:00","cpuPercent":0.23070889997666624,"workingSetBytes":353005568,"privateMemoryBytes":384237568,"managedHeapBytes":73417984,"threads":24}
+{"timestampUtc":"2025-12-29T17:29:39.5590538+00:00","cpuPercent":0.07616771463846077,"workingSetBytes":353005568,"privateMemoryBytes":384237568,"managedHeapBytes":73541016,"threads":24}
+{"timestampUtc":"2025-12-29T17:29:40.0593232+00:00","cpuPercent":0.07436062768357535,"workingSetBytes":353005568,"privateMemoryBytes":384237568,"managedHeapBytes":73646920,"threads":24}
+{"timestampUtc":"2025-12-29T17:29:40.5596045+00:00","cpuPercent":0.06011544083537256,"workingSetBytes":353005568,"privateMemoryBytes":384237568,"managedHeapBytes":73753288,"threads":24}
+{"timestampUtc":"2025-12-29T17:29:41.0599354+00:00","cpuPercent":0.05576554347446691,"workingSetBytes":353005568,"privateMemoryBytes":384237568,"managedHeapBytes":73859616,"threads":24}
+{"timestampUtc":"2025-12-29T17:29:41.5601205+00:00","cpuPercent":0.06387355187837374,"workingSetBytes":353005568,"privateMemoryBytes":384237568,"managedHeapBytes":73966000,"threads":24}
+{"timestampUtc":"2025-12-29T17:29:42.0596646+00:00","cpuPercent":0.07066464401634616,"workingSetBytes":353005568,"privateMemoryBytes":384237568,"managedHeapBytes":74072368,"threads":24}
+{"timestampUtc":"2025-12-29T17:29:42.5599118+00:00","cpuPercent":0.04927551617862323,"workingSetBytes":353267712,"privateMemoryBytes":384237568,"managedHeapBytes":74178800,"threads":24}
+{"timestampUtc":"2025-12-29T17:29:43.0616728+00:00","cpuPercent":17.031205195330724,"workingSetBytes":354152448,"privateMemoryBytes":384237568,"managedHeapBytes":78454392,"threads":24}

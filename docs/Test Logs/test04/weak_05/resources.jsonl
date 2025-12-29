@@ -1,0 +1,11 @@
+{"timestampUtc":"2025-12-28T17:17:00.7664961+00:00","cpuPercent":11.251338537637507,"workingSetBytes":211771392,"privateMemoryBytes":234872832,"managedHeapBytes":28268352,"threads":24}
+{"timestampUtc":"2025-12-28T17:17:01.2637242+00:00","cpuPercent":1.548685111134613,"workingSetBytes":211812352,"privateMemoryBytes":234942464,"managedHeapBytes":28370520,"threads":24}
+{"timestampUtc":"2025-12-28T17:17:01.768581+00:00","cpuPercent":0.17168728861603025,"workingSetBytes":211812352,"privateMemoryBytes":235073536,"managedHeapBytes":28476856,"threads":24}
+{"timestampUtc":"2025-12-28T17:17:02.2661908+00:00","cpuPercent":0.14162666700540508,"workingSetBytes":211812352,"privateMemoryBytes":235204608,"managedHeapBytes":28583032,"threads":24}
+{"timestampUtc":"2025-12-28T17:17:02.7640089+00:00","cpuPercent":0.1531193136124697,"workingSetBytes":211812352,"privateMemoryBytes":235270144,"managedHeapBytes":28689976,"threads":24}
+{"timestampUtc":"2025-12-28T17:17:03.268392+00:00","cpuPercent":12.21791688793919,"workingSetBytes":212414464,"privateMemoryBytes":235794432,"managedHeapBytes":29197752,"threads":24}
+{"timestampUtc":"2025-12-28T17:17:03.7656963+00:00","cpuPercent":22.525491450209582,"workingSetBytes":212951040,"privateMemoryBytes":236716032,"managedHeapBytes":30069872,"threads":24}
+{"timestampUtc":"2025-12-28T17:17:04.2629287+00:00","cpuPercent":23.653909443865594,"workingSetBytes":213487616,"privateMemoryBytes":237568000,"managedHeapBytes":30943976,"threads":24}
+{"timestampUtc":"2025-12-28T17:17:04.7645269+00:00","cpuPercent":23.68612035701662,"workingSetBytes":214306816,"privateMemoryBytes":238419968,"managedHeapBytes":31793984,"threads":24}
+{"timestampUtc":"2025-12-28T17:17:05.2690963+00:00","cpuPercent":23.33444375882819,"workingSetBytes":215138304,"privateMemoryBytes":239271936,"managedHeapBytes":32667296,"threads":24}
+{"timestampUtc":"2025-12-28T17:17:05.766278+00:00","cpuPercent":26.759776003143145,"workingSetBytes":216182784,"privateMemoryBytes":240320512,"managedHeapBytes":33714296,"threads":24}

@@ -1,0 +1,6 @@
+{"timestampUtc":"2025-12-28T18:01:03.2060485+00:00","cpuPercent":3.8298395703378683,"workingSetBytes":434622464,"privateMemoryBytes":454459392,"managedHeapBytes":79798248,"threads":24}
+{"timestampUtc":"2025-12-28T18:01:03.7059439+00:00","cpuPercent":0.07276483995251928,"workingSetBytes":434622464,"privateMemoryBytes":454459392,"managedHeapBytes":79904472,"threads":24}
+{"timestampUtc":"2025-12-28T18:01:04.2061176+00:00","cpuPercent":0.08352093805439459,"workingSetBytes":434622464,"privateMemoryBytes":454459392,"managedHeapBytes":80010712,"threads":24}
+{"timestampUtc":"2025-12-28T18:01:04.7064166+00:00","cpuPercent":0.05666612159254468,"workingSetBytes":434622464,"privateMemoryBytes":454459392,"managedHeapBytes":80116648,"threads":24}
+{"timestampUtc":"2025-12-28T18:01:05.2064529+00:00","cpuPercent":0.05609587010985078,"workingSetBytes":434622464,"privateMemoryBytes":454459392,"managedHeapBytes":80222696,"threads":24}
+{"timestampUtc":"2025-12-28T18:01:05.7063543+00:00","cpuPercent":5.2872436807536065,"workingSetBytes":434622464,"privateMemoryBytes":454459392,"managedHeapBytes":84070448,"threads":24}
