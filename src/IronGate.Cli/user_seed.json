@@ -1,5 +1,5 @@
 {
-  "seed_group": 3971157,
+  "seed_group": "3971157",
   "users": [
     {
       "username": "weak_01",
@@ -66,77 +66,77 @@
     },
     {
       "username": "weak_10",
-      "password": "taylor1",
+      "password": "taylor",
       "category": "weak",
       "totp_enabled": false,
       "secret_totp": null
     },
 
     {
-      "username": "medium-01",
+      "username": "medium_01",
       "password": "Skyline2024",
       "category": "medium",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "medium-02",
+      "username": "medium_02",
       "password": "BlueRiver19",
       "category": "medium",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "medium-03",
+      "username": "medium_3",
       "password": "Mountain88",
       "category": "medium",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "medium-04",
+      "username": "medium_04",
       "password": "Coffee92",
       "category": "medium",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "medium-05",
+      "username": "medium_05",
       "password": "Window73",
       "category": "medium",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "medium-06",
+      "username": "medium_06",
       "password": "Summer21",
       "category": "medium",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "medium-07",
+      "username": "medium_07",
       "password": "Laptop307",
       "category": "medium",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "medium-08",
+      "username": "medium_08",
       "password": "Silver39",
       "category": "medium",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "medium-09",
+      "username": "medium_09",
       "password": "Garden55",
       "category": "medium",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "medium-10",
+      "username": "medium_10",
       "password": "YellowTree41",
       "category": "medium",
       "totp_enabled": true,
@@ -144,70 +144,70 @@
     },
 
     {
-      "username": "strong-01",
+      "username": "strong_01",
       "password": "Gr33n!Forest_92",
       "category": "strong",
       "totp_enabled": true,
       "secret_totp": "NB2W4Y3DPEHPK3PX"
     },
     {
-      "username": "strong-02",
+      "username": "strong_02",
       "password": "Blu3Ocean#714",
       "category": "strong",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "strong-03",
+      "username": "strong_03",
       "password": "Red!Galaxy7_21",
       "category": "strong",
       "totp_enabled": true,
       "secret_totp": "KRSXG5DSNFXGOIDP"
     },
     {
-      "username": "strong-04",
+      "username": "strong_04",
       "password": "NightSky*48!road",
       "category": "strong",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "strong-05",
+      "username": "strong_05",
       "password": "Ston3Wall@990",
       "category": "strong",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "strong-06",
+      "username": "strong_06",
       "password": "Aur0ra$Light_77",
       "category": "strong",
       "totp_enabled": true,
       "secret_totp": "MFRGGZDFMZTWQ2LK"
     },
     {
-      "username": "strong-07",
+      "username": "strong_07",
       "password": "P@ssw0rd?NoThanks9",
       "category": "strong",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "strong-08",
+      "username": "strong_08",
       "password": "Wh!teHorse_64",
       "category": "strong",
       "totp_enabled": false,
       "secret_totp": null
     },
     {
-      "username": "strong-09",
+      "username": "strong_09",
       "password": "C0pper&River_38",
       "category": "strong",
       "totp_enabled": true,
       "secret_totp": "ONSWG4TFORXW4Y3D"
     },
     {
-      "username": "strong-10",
+      "username": "strong_10",
       "password": "Midn1ght#Train_5",
       "category": "strong",
       "totp_enabled": false,

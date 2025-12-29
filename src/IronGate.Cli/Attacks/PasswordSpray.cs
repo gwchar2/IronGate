@@ -21,9 +21,18 @@ namespace IronGate.Cli.Attacks {
         private static long totalRequestMs;
         private static double averageMsPerRequest;
 
-        internal static async Task RunAsync (HttpClient http,AuthConfigDto config,UserSeed seed,string usernamesFile,string passwordList, int threads) {
+        internal static async Task RunAsync (HttpClient http,AuthConfigDto config,UserSeed seed,string usernamesFile,int threads) {
 
-            var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            var baseDir = Directory.GetCurrentDirectory();
+            var passwordList = Path.IsPathRooted(Defaults.RockYou)
+                ? Defaults.RockYou
+                : Path.Combine(baseDir, Defaults.RockYou);
+
+            if (!File.Exists(passwordList)) {
+                Console.WriteLine($"Wordlist not found: {passwordList}");
+                return;
+            }
+            Console.WriteLine($"Path of passwords: {passwordList}");
 
             // Check validty of files
             if (!File.Exists(usernamesFile)) {
@@ -240,8 +249,6 @@ namespace IronGate.Cli.Attacks {
                         foreach (var (u, p) in found)
                             Console.WriteLine($"Success: {u} / {p}");
 
-                        Console.WriteLine("Stopped: Success found.");
-                        return;
                     }
                 }
 

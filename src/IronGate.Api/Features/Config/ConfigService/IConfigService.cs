@@ -6,4 +6,6 @@ public interface IConfigService {
     Task<AuthConfigDto> GetConfigAsync(CancellationToken cancellationToken = default);
 
     Task<AuthConfigDto> UpdateConfigAsync(AuthConfigDto request, CancellationToken cancellationToken = default);
+
+    Task<int> ResetUserStatesAsync(CancellationToken cancellationToken = default);
 }

@@ -1,4 +1,18 @@
 # IronGate
+
+## Table of Contents
+
+1. [Project Overview](#project-overview)
+2. [Repository Layout](#repository-layout)
+3. [Getting Started](#getting-started)
+4. [Running the Project](#running-the-project)
+5. [Core Concepts](#core-concepts)
+6. [API server](#api-server)
+7. [CLI](#cli)
+8. [Ethical Statement](#ethical-statement)
+---
+
+# Project Overview
 3971157
 IronGate is a security-focused learning and experimentation project that demonstrates password-based authentication, defensive controls, and controlled attack simulations against a local lab environment. It includes:
 
@@ -12,11 +26,8 @@ To see our thought process, check out:
 
 ``https://docs.google.com/document/d/1y9GAkvzMeREG348OgO-jRU4kgLXtTK8E_ooSjLuyAz0/edit?tab=t.0``
 
----
 
-## Repository layout
-
-Typical layout (names may differ slightly per solution):
+## Repository Layout
 
 - `src/IronGate.Api/` - Web API server (endpoints for register/login/config/captcha, etc.)
 - `src/IronGate.Core/` - Database / persistence layer (EF Core, migrations, DB context, repositories)
@@ -46,7 +57,6 @@ If, for some reason, it is - run the following command:
 
 `dotnet ef migrations add InitialCreate -p src/IronGate.Core -s src/IronGate.Api`
 
-
 ### Running via Visual Studio
 1. Open the solution file `IronGate.sln`.
 
@@ -68,7 +78,7 @@ If, for some reason, it is - run the following command:
 7. You can now access the CLI and use the attacks. Run it once via `.\Irongate.exe` in order to get the help menu printed.
 <img src="./assets/once.jpg" alt="dockercompose" />
 
-## Core concepts
+## Core Concepts
 
 ### Users and password strength groups
 
@@ -148,10 +158,10 @@ attack spray <usernamesFile> <passwordFile> <thread_amount>
 ```
 
 `Note:` Login commands must receive 4 variables. If you do not have an input, use `-` as a filler.
-`Note:` Password-Spray runs with a default of 4 threads, and at a maximum of 32 threads.
+`Note:` Password-Spray runs with a default of 4 threads, and at a maximum of 20 threads.
 
 
-### Ethical Statement
+## Ethical Statement
 IronGate is intended for education, research, and security testing in controlled environments only.
 
 You may use it only against systems you own or have explicit written permission to test. Do not use it to gain unauthorized access, disrupt services, exfiltrate data, or harm people or infrastructure.

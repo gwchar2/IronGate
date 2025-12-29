@@ -56,7 +56,14 @@ namespace IronGate.Cli.Helpers {
                 Body = body ?? string.Empty
             };
         }
+        /*
+         * Handles the POST request to reset the database user state
+         */
+        public static async Task<HttpCallResult> ResetUserStatesAsync(HttpClient http, JsonSerializerOptions jsonOpts) {
+            var payload = new { };
 
+            return await SendJsonAsync(http,HttpMethod.Post,"/api/admin/reset_login_state_all",payload,jsonOpts).ConfigureAwait(false);
+        }
         /*
          * Tries to get a certain property from a Json, returns it to a variable named value
          */

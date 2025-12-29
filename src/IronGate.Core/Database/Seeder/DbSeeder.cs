@@ -25,8 +25,7 @@ public static class DbSeeder {
             PropertyNameCaseInsensitive = true
         };
 
-        var seed = JsonSerializer.Deserialize<UsersSeedFile>(json, options)
-                   ?? throw new InvalidOperationException("Failed to deserialize users seed file.");
+        var seed = JsonSerializer.Deserialize<UsersSeedFile>(json, options) ?? throw new InvalidOperationException("Failed to deserialize users seed file.");
 
         var now = DateTime.UtcNow;
 

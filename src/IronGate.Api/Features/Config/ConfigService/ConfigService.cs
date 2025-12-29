@@ -41,6 +41,18 @@ public sealed class ConfigService(AppDbContext db) : IConfigService {
         return MapToDto(entity);
     }
 
+    public async Task<int> ResetUserStatesAsync(CancellationToken cancellationToken = default) {
+        var affected = await _db.Users.ExecuteUpdateAsync(setters => setters
+            .SetProperty(u => u.FailedAttemptsInWindow, 0)
+            .SetProperty(u => u.LockoutUntil, (DateTime?)null)
+            .SetProperty(u => u.LastLoginSuccessAt, (DateTime?)null)
+            .SetProperty(u => u.CaptchaRequired, false)   
+            .SetProperty(u => u.LastLoginAttemptAt, (DateTime?)null),
+            cancellationToken);
+
+        return affected;
+    }
+
     private static AuthConfigDto MapToDto(DbConfigProfile entity) {
         return new AuthConfigDto {
             HashAlgorithm = entity.HashAlgorithm,
@@ -55,4 +67,6 @@ public sealed class ConfigService(AppDbContext db) : IConfigService {
             CaptchaAfterFailedAttempts = entity.CaptchaAfterFailedAttempts
         };
     }
+
+
 }

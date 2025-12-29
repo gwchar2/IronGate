@@ -23,4 +23,5 @@ public sealed class AdminController(ICaptchaService captchaService) : Controller
         var token = await _captchaService.IssueTokenAsync(groupSeed, cancellationToken);
         return Ok(token);
     }
+
 }

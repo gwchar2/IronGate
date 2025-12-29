@@ -17,6 +17,8 @@ namespace IronGate.Cli.Helpers {
             Console.WriteLine("IronGate.Cli");
             Console.WriteLine();
             Console.WriteLine("Commands:");
+            Console.WriteLine("  tests");
+            Console.WriteLine("  test <test_number>");
             Console.WriteLine("  register <username> <password>");
             Console.WriteLine("  config get");
             Console.WriteLine("  config set <pathToJson>");
@@ -25,20 +27,28 @@ namespace IronGate.Cli.Helpers {
             Console.WriteLine("  login <username> <password> <totp_secret> -");
             Console.WriteLine("  login <username> <password> - <captcha>");
             Console.WriteLine("  attack brute-force <username> ");
-            Console.WriteLine("  attack spray <usernamesFile> <passwordFile> <thread_amount>");
+            Console.WriteLine("  attack spray <usernamesFile> <thread_amount>");
             Console.WriteLine("Note: All attacks are executed until either the limit or a success is reached.");
             Console.WriteLine();
             Console.WriteLine("Defaults:");
             Console.WriteLine($"  Default limit per run: {Defaults.DefaultLimit}");
             Console.WriteLine($"  Hard limit:            {Defaults.HardLimit}");
-            Console.WriteLine($"  Time limit (seconds):  { Defaults.TimeLimitSeconds}");
+            Console.WriteLine($"  Time limit (seconds):  {Defaults.TimeLimitSeconds}");
+            Console.WriteLine($"  Threads for spraying:  {Defaults.DefaultThreadAmount}");
             Console.WriteLine();
             Console.WriteLine("Files:");
-            Console.WriteLine($"  Users seed: {Defaults.UserSeed}");
-            Console.WriteLine($"  Wordlist:   {Defaults.RockYou}");
+            Console.WriteLine($"  Users seed:       {Defaults.UserSeed}");
+            Console.WriteLine($"  Passwordlist:     {Defaults.RockYou}");
         }
 
-        public static void PrintHttpResult(HttpCallResult resp) {
+        internal static void MissingRockYou() {
+            Console.WriteLine("Missing wordlist: rockyou.txt");
+            Console.WriteLine("Place it next to the executable at:");
+            Console.WriteLine(Path.Combine(AppContext.BaseDirectory, "rockyou.txt"));
+            Console.WriteLine("Then rerun the command.");
+            Console.WriteLine("You can download it from: https://weakpass.com/wordlists/rockyou.txt#wordlist");
+        }
+        internal static void PrintHttpResult(HttpCallResult resp) {
             Console.WriteLine($"HTTP {resp.StatusCode} {resp.ReasonPhrase}");
 
             if (string.IsNullOrWhiteSpace(resp.Body)) return;
@@ -72,7 +82,6 @@ namespace IronGate.Cli.Helpers {
        */
         internal static void Log(int httpAttempts, StreamWriter log, string username, string password, HttpCallResult resp,string attack_type) {
 
-            httpAttempts++;
 
             if (log is null)
                 return;

@@ -1,10 +1,12 @@
-﻿using System;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Net.Http.Headers;
-using IronGate.Cli.Helpers;
-using IronGate.Cli.Attacks;
+﻿using IronGate.Cli.Attacks;
 using IronGate.Cli.Constants;
+using IronGate.Cli.Helpers;
+using IronGate.Cli.Tests;
+using System;
+using System.IO;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
 #nullable enable
 
 namespace IronGate.Cli {
@@ -13,9 +15,6 @@ namespace IronGate.Cli {
          * TODO: 
          *  1.(DONE) Go through the Todos's  
          *  2. Fix the prerequesits properly.
-         *      Migrations
-         *      Specific files (Brute force: user_seed.json , rockyou | Spray: user_seed.json, usernameFile, passwordFile)
-         *  3. Decide on exact combination of tests, understand what am I really required to test? What do I look for ?
          *  4. Test
          *  5. Summarize
          *  6. Proper README
@@ -29,19 +28,34 @@ namespace IronGate.Cli {
          */
         public static async Task<int> Main(string[] args) {
             try {
+                using var http = new HttpClient { BaseAddress = new Uri(Defaults.url) };
+                http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+               
+                if (!File.Exists(Defaults.RockYou)) {
+                    Printers.MissingRockYou();
+                    return 0;
+                }
 
                 if (args.Length == 0 || IsHelp(args[0])) {
                     Printers.PrintHelp();
                     return 0;
                 }
 
-                using var http = new HttpClient { BaseAddress = new Uri(Defaults.url) };
-                http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                
                 var command = args[0].ToLowerInvariant();
 
                 (bool printHelp, HttpCallResult? resp) result = (true, null);
                 switch (command) {
+                    case "test":
+                        if (args.Length >= 2 && (int.TryParse(args[1], out var testNumber) && testNumber >= 1 && testNumber <= 27)) {
+                            var testName = $"Test{testNumber:00}";
+                            await TestRunner.RunOneAsync(http, testName);
+                            break;
+                        } else
+                            Printers.PrintHelp();
+                        break;
+                    case "tests":
+                            await TestRunner.RunAllAsync(http);
+                        break;
                     case "register":
                         result = await Register.RegisterAction(http, args);
                         break;
@@ -88,6 +102,5 @@ namespace IronGate.Cli {
             Console.Error.WriteLine($"Unknown command: {cmd}");
             Printers.PrintHelp();
         }
-
     }
 }

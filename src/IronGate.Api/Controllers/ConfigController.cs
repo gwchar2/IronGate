@@ -44,4 +44,12 @@ public sealed class ConfigController(IConfigService configService) : ControllerB
             });
         }
     }
+
+    // POST /api/config/reset_login_state_all
+    [HttpPost("reset_login_state_all")]
+    public async Task<ActionResult> ResetLoginStateAll(CancellationToken cancellationToken) {
+        var affected = await _configService.ResetUserStatesAsync(cancellationToken);
+
+        return Ok(new { affected });
+    }
 }

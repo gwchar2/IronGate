@@ -78,9 +78,7 @@ namespace IronGate.Cli {
 
                     // If now the captcha also wants a totp (the action filter comes first)
                     if (response2 == AuthResultCode.TotpRequired && !string.IsNullOrWhiteSpace(secret)) {
-
                         var resp3 = await LoginTotpAsync(http, username, password, TotpCreator.GenerateCode(secret), captcha!).ConfigureAwait(false);
-
                         return (false, resp3);
                     }
 

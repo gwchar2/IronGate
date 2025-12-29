@@ -4,6 +4,21 @@
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -102,6 +117,34 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="Tests\ITestCase.cs" />
+    <Compile Include="Tests\PathUtil.cs" />
+    <Compile Include="Tests\TestCases\Test14.cs" />
+    <Compile Include="Tests\TestCases\Test03.cs" />
+    <Compile Include="Tests\TestCases\Test10.cs" />
+    <Compile Include="Tests\TestCases\Test08.cs" />
+    <Compile Include="Tests\TestCases\Test07.cs" />
+    <Compile Include="Tests\TestCases\Test12.cs" />
+    <Compile Include="Tests\TestCases\Test06.cs" />
+    <Compile Include="Tests\TestCases\Test09.cs" />
+    <Compile Include="Tests\TestCases\Test15.cs" />
+    <Compile Include="Tests\TestCases\Test05.cs" />
+    <Compile Include="Tests\TestCases\Test13.cs" />
+    <Compile Include="Tests\TestCases\Test04.cs" />
+    <Compile Include="Tests\TestCases\Test16.cs" />
+    <Compile Include="Tests\TestCases\Test11.cs" />
+    <Compile Include="Tests\TestCases\Test18.cs" />
+    <Compile Include="Tests\TestCases\Test17.cs" />
+    <Compile Include="Tests\TestCases\Test20.cs" />
+    <Compile Include="Tests\TestCases\Test19.cs" />
+    <Compile Include="Tests\TestCases\Test02.cs" />
+    <Compile Include="Tests\TestCases\Test01.cs" />
+    <Compile Include="Tests\TestCases\Test21.cs" />
+    <Compile Include="Tests\TestCases\Test23.cs" />
+    <Compile Include="Tests\TestCases\Test22.cs" />
+    <Compile Include="Tests\TestCaseBase.cs" />
+    <Compile Include="Tests\TestLogMover.cs" />
+    <Compile Include="Tests\TestRegistry.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -115,15 +158,24 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="passwords.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="rockyou.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="usernames.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.8">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.8 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
