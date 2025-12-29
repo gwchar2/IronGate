@@ -45,12 +45,15 @@ namespace IronGate.Cli {
 
                 (bool printHelp, HttpCallResult? resp) result = (true, null);
                 switch (command) {
-                    case "tests":
+                    case "test":
                         if (args.Length >= 2 && (int.TryParse(args[1], out var testNumber) && testNumber >= 1 && testNumber <= 27)) {
                             var testName = $"Test{testNumber:00}";
-                            await TestRunner.RunOneAsync(http, testName); 
+                            await TestRunner.RunOneAsync(http, testName);
                             break;
-                        }else 
+                        } else
+                            Printers.PrintHelp();
+                        break;
+                    case "tests":
                             await TestRunner.RunAllAsync(http);
                         break;
                     case "register":
@@ -98,29 +101,6 @@ namespace IronGate.Cli {
         private static void Unknown(string cmd) {
             Console.Error.WriteLine($"Unknown command: {cmd}");
             Printers.PrintHelp();
-        }
-
-
-        internal static void MoveFiles(string targetFolderPath) {
-            Directory.CreateDirectory(targetFolderPath);
-            var resourcesPath = "C:\\Users\\hwath\\Codes\\VisualStudio\\IronGate\\src\\IronGate.Api\\logs\\2025-12-26\\resources.jsonl";
-            var attemptsPath = "C:\\Users\\hwath\\Codes\\VisualStudio\\IronGate\\src\\IronGate.Api\\logs\\2025-12-26\\attempts.jsonl";
-            var bruteforceLog = "C:\\Users\\hwath\\Codes\\VisualStudio\\IronGate\\src\\IronGate.Cli\\bin\\Debug\\brute_force_log.jsonl";
-
-            // Move resources
-            var fileName = Path.GetFileName(resourcesPath);
-            var targetFilePath = Path.Combine(targetFolderPath, fileName);
-            File.Move(resourcesPath, targetFilePath);
-
-            //Move Attempts
-            fileName = Path.GetFileName(attemptsPath);
-            targetFilePath = Path.Combine(targetFolderPath, fileName);
-            File.Move(attemptsPath, targetFilePath);
-
-            // Move Attack Log
-            fileName = Path.GetFileName(bruteforceLog);
-            targetFilePath = Path.Combine(targetFolderPath, fileName);
-            File.Move(bruteforceLog, targetFilePath);
         }
     }
 }

@@ -19,13 +19,22 @@ using System.Threading.Channels;
 
 var builder = WebApplication.CreateBuilder(args);
 
+/* Default DB Connection String */
+var connStr = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connStr))
+    connStr = "Server=db;Database=IronGateDb;User Id=sa;Password=Ir0nGate_Dev1!;TrustServerCertificate=True;";
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(connStr));
 
 /* Pepper configuration */
 var pepper = builder.Configuration["Security:PasswordPepper"];
 if (string.IsNullOrWhiteSpace(pepper))
-    throw new InvalidOperationException("Security:PasswordPepper is not configured.");
+    pepper = "_HERhDonaWE5u563cwXf4v9AuC8IT0oYL_MN_8FDdMI="; // Default pepper for testing purposes only
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 
 /* We register The JSONL Logging Services  and limit channel capacity to 50,000 entries (as the instructions of the assignment said */
 builder.Services.Configure<JsonlLoggingOptions>(builder.Configuration.GetSection("JsonlLogging"));

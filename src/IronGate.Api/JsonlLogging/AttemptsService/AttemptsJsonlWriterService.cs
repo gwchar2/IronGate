@@ -40,24 +40,27 @@ public sealed class AttemptsJsonlWriterService(IOptions<JsonlLoggingOptions> opt
             Directory.CreateDirectory(dayFolder);
 
             var filePath = Path.Combine(dayFolder, _opt.AttemptsFileName);
+            try {
+                await using var fs = new FileStream(
+                    filePath,
+                    FileMode.Append,
+                    FileAccess.Write,
+                    FileShare.Read,
+                    bufferSize: 64 * 1024,
+                    useAsync: true);
 
-            await using var fs = new FileStream(
-                filePath,
-                FileMode.Append,
-                FileAccess.Write,
-                FileShare.Read,
-                bufferSize: 64 * 1024,
-                useAsync: true);
+                await using var sw = new StreamWriter(fs);
 
-            await using var sw = new StreamWriter(fs);
+                var json = JsonSerializer.Serialize(attempt, JsonOpts);
+                await sw.WriteLineAsync(json);
 
-            var json = JsonSerializer.Serialize(attempt, JsonOpts);
-            await sw.WriteLineAsync(json);
-
-            linesSinceFlush++;
-            if (linesSinceFlush >= _opt.WriterFlush) {
-                await sw.FlushAsync(stoppingToken);
-                linesSinceFlush = 0;
+                linesSinceFlush++;
+                if (linesSinceFlush >= _opt.WriterFlush) {
+                    await sw.FlushAsync(stoppingToken);
+                    linesSinceFlush = 0;
+                }
+            }catch {
+                File.Create(filePath);
             }
         }
     }

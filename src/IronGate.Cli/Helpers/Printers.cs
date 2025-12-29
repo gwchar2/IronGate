@@ -18,6 +18,7 @@ namespace IronGate.Cli.Helpers {
             Console.WriteLine();
             Console.WriteLine("Commands:");
             Console.WriteLine("  tests");
+            Console.WriteLine("  test <test_number>");
             Console.WriteLine("  register <username> <password>");
             Console.WriteLine("  config get");
             Console.WriteLine("  config set <pathToJson>");
@@ -45,6 +46,7 @@ namespace IronGate.Cli.Helpers {
             Console.WriteLine("Place it next to the executable at:");
             Console.WriteLine(Path.Combine(AppContext.BaseDirectory, "rockyou.txt"));
             Console.WriteLine("Then rerun the command.");
+            Console.WriteLine("You can download it from: https://weakpass.com/wordlists/rockyou.txt#wordlist");
         }
         internal static void PrintHttpResult(HttpCallResult resp) {
             Console.WriteLine($"HTTP {resp.StatusCode} {resp.ReasonPhrase}");

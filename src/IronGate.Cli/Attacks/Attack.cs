@@ -51,7 +51,6 @@ namespace IronGate.Cli.Attacks {
                                 return (true, null);
                             }
 
-
                             int threads = Defaults.DefaultThreadAmount;
                             if (args.Length >= 4 && int.TryParse(args[3], out var t)) threads = t;
                             await PasswordSpray.RunAsync(http, config, seed, usernamesFile,threads).ConfigureAwait(false);

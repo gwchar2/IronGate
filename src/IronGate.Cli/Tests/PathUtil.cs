@@ -24,10 +24,10 @@ namespace IronGate.Cli.Tests {
 
         // ...\IronGate\docs\Test Logs\
         internal static string DocsTestLogsRoot =>
-            Path.Combine(RepoRoot, "docs", "Test Logs");
+            Path.Combine(SrcRoot, "docs", "Test Logs");
 
         // ...\IronGate\src\IronGate.Api\logs\
         internal static string ApiLogsRoot =>
-            Path.Combine(SrcRoot, "IronGate.Api", "logs");
+            Path.Combine(CliProjectDir, "IronGate.Api", "logs");
     }
 }

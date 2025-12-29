@@ -10,9 +10,7 @@ namespace IronGate.Cli.Tests {
 
         public override async Task RunAsync(HttpClient http) {
             if (!await ApplyConfigAsync(http).ConfigureAwait(false)) return;
-
-            var passwordsFile = Path.Combine(PathUtil.ExeDir, "rockyou.txt");
-            await RunSprayAsync(http, passwordsFile).ConfigureAwait(false);
+            await RunSprayAsync(http, "results").ConfigureAwait(false);
         }
     }
 }

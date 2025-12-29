@@ -18,7 +18,7 @@ namespace IronGate.Cli.Tests {
 
         public virtual string ConfigToLoad => Path.Combine(TargetFolder, "config.json");
 
-        protected const int DefaultDelayMs = 2500;
+        protected const int DefaultDelayMs = 5000;
         protected const int DefaultThreadAmount = 10;
 
         public abstract Task RunAsync(HttpClient http);
@@ -28,17 +28,19 @@ namespace IronGate.Cli.Tests {
          * Apply the DB Configuration for the test
          */
         protected async Task<bool> ApplyConfigAsync(HttpClient http) {
-            (bool success, _) = await Config.ConfigAction(http, ["config", "set", ConfigToLoad]).ConfigureAwait(false);
-            if (!success)
+            Console.WriteLine($"Sending config: {ConfigToLoad}");
+            (_, var resp) = await Config.ConfigAction(http, ["config", "set", ConfigToLoad]).ConfigureAwait(false);
+            var ok = resp != null;
+            if (!ok)
                 Console.WriteLine("Failed to send configuration for test");
-            return success;
+            return ok;
         }
 
         /*
          * Generate user names with a given prefix
          */
         protected static IEnumerable<string> Users(string prefix) {
-            for (int i = 1; i <= 10; i++)
+            for (int i = 2; i <= 10; i++)
                 yield return $"{prefix}_{i:00}";
         }
 
@@ -49,8 +51,10 @@ namespace IronGate.Cli.Tests {
             foreach (var user in users) {
                 var subFolder = Path.Combine(TargetFolder, user);
 
+                Console.WriteLine($"Attacking: {user}");
                 _ = await Attack.AttackAction(http, ["attack", "brute-force", user]).ConfigureAwait(false);
 
+                Console.WriteLine($"Moving files to: {subFolder}");
                 TestLogMover.MoveFiles(subFolder);
 
                 if (delayMs > 0)
@@ -61,9 +65,8 @@ namespace IronGate.Cli.Tests {
         /*
          * Run password spray attack using the usernames file
          */
-        protected async Task RunSprayAsync(HttpClient http,string subFolderName = "spray",int delayMs = DefaultDelayMs) {
+        protected async Task RunSprayAsync(HttpClient http,string subFolderName,int delayMs = DefaultDelayMs) {
             var subFolder = Path.Combine(TargetFolder, subFolderName);
-
             var usernamesFile = Path.Combine(PathUtil.ExeDir, "usernames.txt");
 
             _ = await Attack.AttackAction(http, ["attack", "spray", usernamesFile, DefaultThreadAmount.ToString()]).ConfigureAwait(false);

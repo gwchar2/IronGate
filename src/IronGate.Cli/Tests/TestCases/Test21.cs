@@ -9,7 +9,7 @@ namespace IronGate.Cli.Tests {
 
         public override async Task RunAsync(HttpClient http) {
             if (!await ApplyConfigAsync(http).ConfigureAwait(false)) return;
-            await RunBruteForceAsync(http, Users("medium")).ConfigureAwait(false);
+            await RunBruteForceAsync(http, Users("strong")).ConfigureAwait(false);
         }
     }
 }
