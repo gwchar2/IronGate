@@ -7,7 +7,6 @@ packages/
 logs/
 *.jsonl
 .vs/
-*.logs
 *.secret.json
 /src/IronGate.Cli/rockyou.txt
 
