@@ -4,7 +4,6 @@ out/
 Debug/
 Release/
 packages/
-logs/
 .vs/
 *.secret.json
 /src/IronGate.Cli/rockyou.txt
