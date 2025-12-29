@@ -1,0 +1,11 @@
+{"timestampUtc":"2025-12-28T20:19:51.4973516+00:00","cpuPercent":7.2352929841527915,"workingSetBytes":209108992,"privateMemoryBytes":238645248,"managedHeapBytes":8639424,"threads":23}
+{"timestampUtc":"2025-12-28T20:19:51.9973749+00:00","cpuPercent":0.06644954827597083,"workingSetBytes":209108992,"privateMemoryBytes":238645248,"managedHeapBytes":8740368,"threads":23}
+{"timestampUtc":"2025-12-28T20:19:52.4975269+00:00","cpuPercent":0.07937321931705599,"workingSetBytes":209108992,"privateMemoryBytes":238645248,"managedHeapBytes":8845544,"threads":23}
+{"timestampUtc":"2025-12-28T20:19:52.9974003+00:00","cpuPercent":0.08111997238616124,"workingSetBytes":209108992,"privateMemoryBytes":238645248,"managedHeapBytes":8950720,"threads":23}
+{"timestampUtc":"2025-12-28T20:19:53.497401+00:00","cpuPercent":0.1202503369414441,"workingSetBytes":209108992,"privateMemoryBytes":238645248,"managedHeapBytes":9055416,"threads":23}
+{"timestampUtc":"2025-12-28T20:19:53.997581+00:00","cpuPercent":0.07232366926637752,"workingSetBytes":209108992,"privateMemoryBytes":238645248,"managedHeapBytes":9161592,"threads":23}
+{"timestampUtc":"2025-12-28T20:19:54.497524+00:00","cpuPercent":0.0515058870198746,"workingSetBytes":209108992,"privateMemoryBytes":238645248,"managedHeapBytes":9266768,"threads":23}
+{"timestampUtc":"2025-12-28T20:19:54.9977008+00:00","cpuPercent":0.0659266357321498,"workingSetBytes":209108992,"privateMemoryBytes":238645248,"managedHeapBytes":9371904,"threads":23}
+{"timestampUtc":"2025-12-28T20:19:55.4977077+00:00","cpuPercent":0.07414886107349392,"workingSetBytes":209088512,"privateMemoryBytes":238632960,"managedHeapBytes":9477096,"threads":22}
+{"timestampUtc":"2025-12-28T20:19:55.9978469+00:00","cpuPercent":0.05458482672820541,"workingSetBytes":209088512,"privateMemoryBytes":238632960,"managedHeapBytes":9581064,"threads":22}
+{"timestampUtc":"2025-12-28T20:19:56.4991365+00:00","cpuPercent":3.4927944721278017,"workingSetBytes":209620992,"privateMemoryBytes":238645248,"managedHeapBytes":11640104,"threads":23}
