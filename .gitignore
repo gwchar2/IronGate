@@ -5,12 +5,8 @@ Debug/
 Release/
 packages/
 logs/
-*.jsonl
 .vs/
 *.secret.json
 /src/IronGate.Cli/rockyou.txt
-!docs/Test Logs/
-!docs/Test Logs/**
-!docs/Test Logs/**/*.jsonl
 
 *.mp4
