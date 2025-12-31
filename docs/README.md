@@ -30,7 +30,7 @@ To see our thought process, check out:
 ## Repository Layout
 
 - `src/IronGate.Api/` - Web API server (endpoints for register/login/config/captcha, etc.)
-- `src/IronGate.Core/` - Database / persistence layer (EF Core, migrations, DB context, repositories)
+- `src/IronGate.Core/` - Database (EF Core, migrations, DB context, repositories)
 - `src/IronGate.Cli/` - Command line tool for interacting with API + running attacks
 - `docs/` - Includes all the documents required in the assignment (Logs, video, ppt)
 
