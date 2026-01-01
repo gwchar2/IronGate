@@ -1,0 +1,11 @@
+{"timestampUtc":"2025-12-30T00:32:15.9484579+00:00","cpuPercent":0.3153580814382364,"workingSetBytes":217157632,"privateMemoryBytes":238964736,"managedHeapBytes":13538208,"threads":21}
+{"timestampUtc":"2025-12-30T00:32:16.451582+00:00","cpuPercent":0.2571440868346294,"workingSetBytes":217157632,"privateMemoryBytes":238964736,"managedHeapBytes":13640840,"threads":21}
+{"timestampUtc":"2025-12-30T00:32:16.9481478+00:00","cpuPercent":0.2592795261357035,"workingSetBytes":217423872,"privateMemoryBytes":238964736,"managedHeapBytes":13743408,"threads":21}
+{"timestampUtc":"2025-12-30T00:32:17.4509286+00:00","cpuPercent":0.2549318401761478,"workingSetBytes":217423872,"privateMemoryBytes":238964736,"managedHeapBytes":13854112,"threads":21}
+{"timestampUtc":"2025-12-30T00:32:17.9477599+00:00","cpuPercent":0.3156997940312954,"workingSetBytes":217423872,"privateMemoryBytes":238964736,"managedHeapBytes":13956656,"threads":21}
+{"timestampUtc":"2025-12-30T00:32:18.4507871+00:00","cpuPercent":0.23070397242739038,"workingSetBytes":217423872,"privateMemoryBytes":238964736,"managedHeapBytes":14059216,"threads":21}
+{"timestampUtc":"2025-12-30T00:32:18.9504958+00:00","cpuPercent":0.28286556630754,"workingSetBytes":217423872,"privateMemoryBytes":238964736,"managedHeapBytes":14161776,"threads":21}
+{"timestampUtc":"2025-12-30T00:32:19.4534845+00:00","cpuPercent":0.24950755707395408,"workingSetBytes":217423872,"privateMemoryBytes":238964736,"managedHeapBytes":14265216,"threads":21}
+{"timestampUtc":"2025-12-30T00:32:19.9479508+00:00","cpuPercent":0.24966330037215545,"workingSetBytes":217423872,"privateMemoryBytes":238964736,"managedHeapBytes":14368896,"threads":21}
+{"timestampUtc":"2025-12-30T00:32:20.4449662+00:00","cpuPercent":0.2518399949877854,"workingSetBytes":217423872,"privateMemoryBytes":239095808,"managedHeapBytes":14470440,"threads":21}
+{"timestampUtc":"2025-12-30T00:32:20.9468849+00:00","cpuPercent":5.94274134273469,"workingSetBytes":218161152,"privateMemoryBytes":240300032,"managedHeapBytes":7066280,"threads":23}

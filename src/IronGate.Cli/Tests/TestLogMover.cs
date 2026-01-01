@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
+using System.Diagnostics;
+#nullable enable
 
 namespace IronGate.Cli.Tests {
     internal static class TestLogMover {
@@ -11,7 +13,7 @@ namespace IronGate.Cli.Tests {
         internal static void MoveFiles(string targetFolderPath) {
             Directory.CreateDirectory(targetFolderPath);
 
-            var dayFolder = DateTime.Today.ToString("yyyy-MM-dd");
+            var dayFolder = DateTime.UtcNow.ToString("yyyy-MM-dd");
 
             var resourcesPath = Path.Combine(PathUtil.ApiLogsRoot, dayFolder, "resources.jsonl");
             var attemptsPath = Path.Combine(PathUtil.ApiLogsRoot, dayFolder, "attempts.jsonl");
@@ -35,51 +37,56 @@ namespace IronGate.Cli.Tests {
          * Moves a file from sourcePath to targetFolderPath if it exists.
          */
         private static void MoveIfExists(string sourcePath, string targetFolderPath) {
+            Directory.CreateDirectory(targetFolderPath);
+
+            // If it doesn't exist, nothing to do (maybe already rotated)
             if (!File.Exists(sourcePath))
                 return;
 
-            Directory.CreateDirectory(targetFolderPath);
+            // Rotate-by-rename
+            var rotatedPath = TryRotate(sourcePath, tries: 10, delayMs: 150);
+            if (rotatedPath is null)
+                return; // couldn't rotate (still being opened, or disappeared) -> skip
 
-            var targetPath = Path.Combine(targetFolderPath, Path.GetFileName(sourcePath));
+            // Move the rotated file to the target folder
+            var targetPath = Path.Combine(targetFolderPath, Path.GetFileName(rotatedPath));
 
-            var sourceFull = Path.GetFullPath(sourcePath);
             var targetFull = Path.GetFullPath(targetPath);
-
-            if (string.Equals(sourceFull, targetFull, StringComparison.OrdinalIgnoreCase))
-                return;
-
             if (File.Exists(targetFull))
                 File.Delete(targetFull);
 
-            WaitUntilFileIsFree(sourceFull, timeoutMs: 10_000, pollMs: 200);
-            File.Move(sourceFull, targetFull);
-        }
-        private static void WaitUntilFileIsFree(string path, int timeoutMs = 10_000, int pollMs = 200) {
-            var start = Environment.TickCount;
-
-            while (true) {
-                if (IsFileFree(path))
-                    return;
-
-                if (Environment.TickCount - start >= timeoutMs)
-                    throw new IOException($"Timed out waiting for file to be released: {path}");
-
-                Thread.Sleep(pollMs);
-            }
+            File.Move(rotatedPath, targetFull);
         }
 
-        private static bool IsFileFree(string path) {
-            try {
-                using var stream = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
-                return true;
+        private static string? TryRotate(string sourcePath, int tries, int delayMs) {
+            var dir = Path.GetDirectoryName(sourcePath);
+            if (string.IsNullOrWhiteSpace(dir))
+                return null;
+
+            var baseName = Path.GetFileNameWithoutExtension(sourcePath);
+            var ext = Path.GetExtension(sourcePath);
+
+            for (int i = 0; i < tries; i++) {
+                // File might disappear between attempts
+                if (!File.Exists(sourcePath))
+                    return null;
+
+                var stamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss_fffffff");
+                var rotatedName = $"{baseName}.{stamp}.{Process.GetCurrentProcess().Id}{ext}";
+                var rotatedPath = Path.Combine(dir, rotatedName);
+
+                try {
+                    File.Move(sourcePath, rotatedPath);
+                    return rotatedPath;
+                }
+                catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException) {
+                    Thread.Sleep(delayMs);
+                }
             }
-            catch (IOException) {
-                return false;
-            }
-            catch (UnauthorizedAccessException) {
-                return false;
-            }
+
+            return null;
         }
+
 
     }
 }
