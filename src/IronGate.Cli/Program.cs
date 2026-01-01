@@ -45,6 +45,10 @@ namespace IronGate.Cli {
 
                 (bool printHelp, HttpCallResult? resp) result = (true, null);
                 switch (command) {
+                    case "reset":
+                        result = (true, await HttpUtil.ResetUserStatesAsync(http, Defaults.JsonOpts).ConfigureAwait(false));
+                        break;
+                         
                     case "test":
                         if (args.Length >= 2 && (int.TryParse(args[1], out var testNumber) && testNumber >= 1 && testNumber <= 27)) {
                             var testName = $"Test{testNumber:00}";

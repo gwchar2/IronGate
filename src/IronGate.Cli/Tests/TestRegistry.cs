@@ -42,40 +42,40 @@ namespace IronGate.Cli.Tests
         internal static async Task RunAllAsync(HttpClient http)
         {
 
-
+            /*
             foreach (var t in TestRegistry.All)
             {
                 Console.WriteLine($"Running {t.Name}...");
                 await t.RunAsync(http).ConfigureAwait(false);
                 Console.WriteLine($"Done {t.Name}.");
-            }
-
-            /*
-            for (int i = 6; i <= 11; i++) {
-                Console.WriteLine($"Running {TestRegistry.All[i].Name}...");
-                await TestRegistry.All[i].RunAsync(http).ConfigureAwait(false);
-                Console.WriteLine($"Done {TestRegistry.All[i].Name}.");
-                var r = await HttpUtil.ResetUserStatesAsync(http, Defaults.JsonOpts).ConfigureAwait(false);
-                await Task.Delay(3000).ConfigureAwait(false);
-
-
-            }
-            for (int i = 14; i <= 16; i++) {
-                Console.WriteLine($"Running {TestRegistry.All[i].Name}...");
-                await TestRegistry.All[i].RunAsync(http).ConfigureAwait(false);
-                Console.WriteLine($"Done {TestRegistry.All[i].Name}.");
-                var r = await HttpUtil.ResetUserStatesAsync(http, Defaults.JsonOpts).ConfigureAwait(false);
-                await Task.Delay(3000).ConfigureAwait(false);
-
-            }
-            for (int i = 20; i <= 26; i++) {
-                Console.WriteLine($"Running {TestRegistry.All[i].Name}...");
-                await TestRegistry.All[i].RunAsync(http).ConfigureAwait(false);
-                Console.WriteLine($"Done {TestRegistry.All[i].Name}.");
-                var r = await HttpUtil.ResetUserStatesAsync(http, Defaults.JsonOpts).ConfigureAwait(false);
-                await Task.Delay(3000).ConfigureAwait(false);
-
             }*/
+            // test 16 - 2 hours, spray
+            // test 22 - 2 hours, spray
+            // test 23 - 2 hours, spray
+
+
+
+            await HttpUtil.ResetUserStatesAsync(http, Defaults.JsonOpts).ConfigureAwait(false);
+            await Task.Delay(3000).ConfigureAwait(false);
+            Console.WriteLine($"Running {TestRegistry.All[15].Name}...");
+            await TestRegistry.All[15].RunAsync(http).ConfigureAwait(false);
+            Console.WriteLine($"Done {TestRegistry.All[15].Name}.");
+
+
+            await HttpUtil.ResetUserStatesAsync(http, Defaults.JsonOpts).ConfigureAwait(false);
+            await Task.Delay(3000).ConfigureAwait(false);
+            Console.WriteLine($"Running {TestRegistry.All[21].Name}...");
+            await TestRegistry.All[21].RunAsync(http).ConfigureAwait(false);
+            Console.WriteLine($"Done {TestRegistry.All[21].Name}.");
+
+
+            await HttpUtil.ResetUserStatesAsync(http, Defaults.JsonOpts).ConfigureAwait(false);
+            await Task.Delay(3000).ConfigureAwait(false);
+            Console.WriteLine($"Running {TestRegistry.All[22].Name}...");
+            await TestRegistry.All[22].RunAsync(http).ConfigureAwait(false);
+            Console.WriteLine($"Done {TestRegistry.All[22].Name}.");
+            await HttpUtil.ResetUserStatesAsync(http, Defaults.JsonOpts).ConfigureAwait(false);
+            await Task.Delay(3000).ConfigureAwait(false);
         }
 
         internal static async Task RunOneAsync(HttpClient http, string testName)

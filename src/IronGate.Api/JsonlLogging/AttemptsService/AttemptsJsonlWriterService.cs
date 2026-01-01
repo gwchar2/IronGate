@@ -1,4 +1,5 @@
-﻿using IronGate.Api.Features.Auth.Dtos;
+﻿
+using IronGate.Api.Features.Auth.Dtos;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 using System.Threading.Channels;
@@ -24,44 +25,52 @@ public sealed class AttemptsJsonlWriterService(IOptions<JsonlLoggingOptions> opt
 
         Directory.CreateDirectory(_opt.BaseDirectory);
 
-        int linesSinceFlush = 0;
-
         while (!stoppingToken.IsCancellationRequested) {
             AuthAttemptDto attempt;
             try {
-                attempt = await _reader.ReadAsync(stoppingToken);
+                attempt = await _reader.ReadAsync(stoppingToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException) {
                 break;
             }
 
-            // Daily folder (UTC)
             var dayFolder = Path.Combine(_opt.BaseDirectory, DateTime.UtcNow.ToString("yyyy-MM-dd"));
-            Directory.CreateDirectory(dayFolder);
-
             var filePath = Path.Combine(dayFolder, _opt.AttemptsFileName);
-            try {
-                await using var fs = new FileStream(
-                    filePath,
-                    FileMode.Append,
-                    FileAccess.Write,
-                    FileShare.Read,
-                    bufferSize: 64 * 1024,
-                    useAsync: true);
 
-                await using var sw = new StreamWriter(fs);
+            const int maxTries = 6;
+            for (int i = 0; i < maxTries; i++) {
+                try {
+                    Directory.CreateDirectory(dayFolder);
 
-                var json = JsonSerializer.Serialize(attempt, JsonOpts);
-                await sw.WriteLineAsync(json);
+                    await using var fs = new FileStream(
+                        filePath,
+                        FileMode.Append,
+                        FileAccess.Write,
+                        FileShare.ReadWrite | FileShare.Delete,
+                        bufferSize: 64 * 1024,
+                        useAsync: true);
 
-                linesSinceFlush++;
-                if (linesSinceFlush >= _opt.WriterFlush) {
-                    await sw.FlushAsync(stoppingToken);
-                    linesSinceFlush = 0;
+                    await using var sw = new StreamWriter(fs);
+
+                    var json = JsonSerializer.Serialize(attempt, JsonOpts);
+                    await sw.WriteLineAsync(json).ConfigureAwait(false);
+
+                    break;
                 }
-            }catch {
-                File.Create(filePath);
+                catch (Exception ex) when (
+                    ex is IOException ||
+                    ex is UnauthorizedAccessException ||
+                    ex is DirectoryNotFoundException ||
+                    ex is FileNotFoundException) {
+
+                    if (i == maxTries - 1) {
+                        break;
+                    }
+
+                    await Task.Delay(50 * (i + 1), stoppingToken).ConfigureAwait(false);
+                }
             }
         }
     }
+
 }

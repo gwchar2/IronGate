@@ -62,7 +62,7 @@ namespace IronGate.Cli.Helpers {
         public static async Task<HttpCallResult> ResetUserStatesAsync(HttpClient http, JsonSerializerOptions jsonOpts) {
             var payload = new { };
 
-            return await SendJsonAsync(http,HttpMethod.Post,"/api/admin/reset_login_state_all",payload,jsonOpts).ConfigureAwait(false);
+            return await SendJsonAsync(http,HttpMethod.Post,"/api/config/reset_login_state_all",payload,jsonOpts).ConfigureAwait(false);
         }
         /*
          * Tries to get a certain property from a Json, returns it to a variable named value

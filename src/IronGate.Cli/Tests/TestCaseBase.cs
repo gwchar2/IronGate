@@ -40,7 +40,7 @@ namespace IronGate.Cli.Tests {
          * Generate user names with a given prefix
          */
         protected static IEnumerable<string> Users(string prefix) {
-            for (int i = 2; i <= 10; i++)
+            for (int i = 1; i <= 10; i++)
                 yield return $"{prefix}_{i:00}";
         }
 
@@ -52,6 +52,7 @@ namespace IronGate.Cli.Tests {
                 var subFolder = Path.Combine(TargetFolder, user);
 
                 Console.WriteLine($"Attacking: {user}");
+                await Task.Delay(delayMs).ConfigureAwait(false);
                 _ = await Attack.AttackAction(http, ["attack", "brute-force", user]).ConfigureAwait(false);
 
                 Console.WriteLine($"Moving files to: {subFolder}");
