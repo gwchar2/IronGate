@@ -25,6 +25,7 @@ This repository is intended for education, testing, and research in a controlled
 To see our thought process, check out:
 
 [YouTube Video - Project Guide](https://youtu.be/6VN0eVsrGHQ?si=f3gUKwm0onZykGCo)
+
 [Google Docs Project Plan](https://docs.google.com/document/d/1y9GAkvzMeREG348OgO-jRU4kgLXtTK8E_ooSjLuyAz0/edit?tab=t.0)
 
 ## Repository Layout
