@@ -1,0 +1,1 @@
+{"username":"weak_09","operation":"LOGIN","timestamp":"2026-01-03T14:25:35.8378226+00:00","latencyMs":9,"success":true,"result":0,"lockOutUntil":null,"hashAlgorithm":"sha256","totpRequired":false,"captchaRequired":false,"defences":{"pepperEnabled":false,"captchaEnabled":true,"rateLimitEnabled":false,"lockoutEnabled":false}}
