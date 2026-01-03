@@ -40,7 +40,7 @@ namespace IronGate.Cli.Tests {
          * Generate user names with a given prefix
          */
         protected static IEnumerable<string> Users(string prefix) {
-            for (int i = 1; i <= 10; i++)
+            for (int i = 2; i <= 10; i++)
                 yield return $"{prefix}_{i:00}";
         }
 
