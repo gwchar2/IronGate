@@ -11,15 +11,6 @@ using System.Threading.Tasks;
 
 namespace IronGate.Cli {
     internal static class Program {
-        /*
-         * TODO: 
-         *  1.(DONE) Go through the Todos's  
-         *  2. Fix the prerequesits properly.
-         *  4. Test
-         *  5. Summarize
-         *  6. Proper README
-         *  https://weakpass.com/wordlists/rockyou.txt#wordlist
-         */
 
         /*
          * IronGate.Cli Main Entry Point
