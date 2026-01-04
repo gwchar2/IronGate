@@ -99,7 +99,7 @@ namespace IronGate.Cli.Attacks {
             using var log = new StreamWriter(logPath, append: true, Encoding.UTF8);
             var logLock = new object();
 
-            // TODO: Move this to prints
+
             Console.WriteLine("Attack: Password Spray");
             Console.WriteLine($"Usernames: {users.Count}");
             Console.WriteLine($"Threads: {threads}");
