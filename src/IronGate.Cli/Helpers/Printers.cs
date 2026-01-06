@@ -24,8 +24,8 @@ namespace IronGate.Cli.Helpers {
             Console.WriteLine("  config set <pathToJson>");
             Console.WriteLine("  captcha create <groupSeed>");
             Console.WriteLine("  login <username> <password> <totp_secret> <captcha>");
-            Console.WriteLine("  login <username> <password> <totp_secret> -");
-            Console.WriteLine("  login <username> <password> - <captcha>");
+            Console.WriteLine("  login <username> <password> <totp_secret> <->");
+            Console.WriteLine("  login <username> <password> <-> <captcha>");
             Console.WriteLine("  attack brute-force <username> ");
             Console.WriteLine("  attack spray <usernamesFile> <thread_amount>");
             Console.WriteLine("Note: All attacks are executed until either the limit or a success is reached.");
