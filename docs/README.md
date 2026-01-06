@@ -27,17 +27,26 @@ To see our thought process, check out:
 [Google Docs Project Plan](https://docs.google.com/document/d/1y9GAkvzMeREG348OgO-jRU4kgLXtTK8E_ooSjLuyAz0/edit?tab=t.0)
 
 [YouTube Video - Project Guide](https://youtu.be/6VN0eVsrGHQ?si=f3gUKwm0onZykGCo)
-[0:00 Intro](https://youtu.be/6VN0eVsrGHQ?si=dy5rgRszSb2_2iPy&t=0)
-[0:26 הסבר על רכיבי הפרויקט](https://youtu.be/6VN0eVsrGHQ?si=dy5rgRszSb2_2iPy&t=26)
-[0:45 הסבר על מסד הנתונים](https://youtu.be/6VN0eVsrGHQ?si=dy5rgRszSb2_2iPy&t=45)
-[2:20 הסבר על הAPI](https://youtu.be/6VN0eVsrGHQ?si=dy5rgRszSb2_2iPy&t=140)
-[3:40 הסבר על הCLI](https://youtu.be/6VN0eVsrGHQ?si=dy5rgRszSb2_2iPy&t=220)
-[5:20  בניית הפרויקט והרצתו](https://youtu.be/6VN0eVsrGHQ?si=dy5rgRszSb2_2iPy&t=320))
-[6:25  הפעלת התוכנת תקיפה - IronGate.CLI](https://youtu.be/6VN0eVsrGHQ?si=dy5rgRszSb2_2iPy&t=385)
-[9:00  לוגים](https://youtu.be/6VN0eVsrGHQ?si=dy5rgRszSb2_2iPy&t=540)
-[11:30  הפעלת התקיפות](https://youtu.be/6VN0eVsrGHQ?si=dy5rgRszSb2_2iPy&t=690)
-[12:50  Test cases + Test Logs](https://youtu.be/6VN0eVsrGHQ?si=dy5rgRszSb2_2iPy&t=770)
-[14:22  הדגמה לתקיפה](https://youtu.be/6VN0eVsrGHQ?si=dy5rgRszSb2_2iPy&t=862)
+
+ [0:00 Intro](https://youtu.be/6VN0eVsrGHQ?si=dy5rgRszSb2_2iPy&t=0)
+
+ [0:26 Project Explanation](https://youtu.be/6VN0eVsrGHQ?si=dy5rgRszSb2_2iPy&t=26)
+
+ [0:45 Database](https://youtu.be/6VN0eVsrGHQ?si=dy5rgRszSb2_2iPy&t=45)
+
+ [2:20 API](https://youtu.be/6VN0eVsrGHQ?si=dy5rgRszSb2_2iPy&t=140)
+
+ [5:20 Building & Running the Project](https://youtu.be/6VN0eVsrGHQ?si=dy5rgRszSb2_2iPy&t=320)
+
+ [6:25 IronGate.CLI](https://youtu.be/6VN0eVsrGHQ?si=dy5rgRszSb2_2iPy&t=385)
+
+ [9:00 Logs](https://youtu.be/6VN0eVsrGHQ?si=dy5rgRszSb2_2iPy&t=540)
+
+ [11:30 Attacking](https://youtu.be/6VN0eVsrGHQ?si=dy5rgRszSb2_2iPy&t=690)
+
+ [12:50 Test Cases + Test Logs](https://youtu.be/6VN0eVsrGHQ?si=dy5rgRszSb2_2iPy&t=770)
+
+ [14:22 Example - Password Spray](https://youtu.be/6VN0eVsrGHQ?si=dy5rgRszSb2_2iPy&t=862)
 
 ## Repository Layout
 
@@ -125,7 +134,7 @@ The server configuration typically includes:
 
 ---
 
-## API server (high-level)
+## API server
 
 The API is the source of truth for:
 
@@ -144,7 +153,7 @@ Endpoints differ per implementation, but the CLI expects the API to provide:
 
 ---
 
-## CLI (IronGate.Cli)
+## CLI
 
 IronGate.Cli is the main user interface for:
 
